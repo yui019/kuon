@@ -51,13 +51,13 @@ fn expr_binding_power(
         }
 
         Some(Token::LeftParenNormal) => {
-            let left = expr_binding_power(lexer, 0);
+            let inner_expression = parse(lexer);
 
             if lexer.next() != Some(Token::RightParenNormal) {
                 return Err(format!("Expected ("));
             }
 
-            left?
+            inner_expression?
         }
 
         t => return Err(format!("Unexpected token: {:?}", t)),
