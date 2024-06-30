@@ -141,6 +141,12 @@ fn infix_binding_power(op: &Token) -> Option<(u8, u8)> {
         Token::Plus | Token::Minus => Some((10, 11)),
         Token::Star | Token::Slash => Some((20, 21)),
 
+        Token::EqualsEquals
+        | Token::LessThan
+        | Token::LessThanOrEqual
+        | Token::GreaterThan
+        | Token::GreaterThanOrEqual => Some((0, 1)),
+
         _ => None,
     }
 }
