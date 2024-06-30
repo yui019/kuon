@@ -2,6 +2,8 @@ use crate::lexer::{token::Token, Lexer};
 
 #[derive(Debug, Clone)]
 pub enum Expression {
+    Null,
+
     String(String),
     Char(char),
     Int(i64),
@@ -25,7 +27,31 @@ pub enum Expression {
     },
 }
 
-pub fn parse(lexer: &mut Lexer) -> Result<Expression, String> {
+pub fn parse_source(lexer: &mut Lexer) -> Result<Expression, String> {
+    let mut expression = parse_expression(lexer);
+
+    loop {
+        match lexer.next() {
+            Some(Token::Semicolon) => {
+                if lexer.peek().is_some() {
+                    expression = parse_expression(lexer);
+                } else {
+                    expression = Ok(Expression::Null);
+                }
+            }
+
+            Some(token) => {
+                return Err(format!("Unexpected token: {:?}", token))
+            }
+
+            None => break,
+        }
+    }
+
+    expression
+}
+
+fn parse_expression(lexer: &mut Lexer) -> Result<Expression, String> {
     expr_binding_power(lexer, 0)
 }
 
@@ -51,7 +77,7 @@ fn expr_binding_power(
         }
 
         Some(Token::LeftParenNormal) => {
-            let inner_expression = parse(lexer);
+            let inner_expression = parse_expression(lexer);
 
             if lexer.next() != Some(Token::RightParenNormal) {
                 return Err(format!("Expected ("));

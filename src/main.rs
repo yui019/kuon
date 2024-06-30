@@ -14,5 +14,5 @@ fn main() {
 
     println!("\n========================================\n");
 
-    println!("{:#?}", parser::parse(&mut lexer));
+    println!("{:#?}", parser::parse_source(&mut lexer));
 }
