@@ -1,6 +1,6 @@
 use crate::lexer::{token::Token, Lexer};
 
-use super::super::{expression::Expression, parse_expression};
+use super::super::expression::Expression;
 
 /// Called after Token::LeftParenCurly
 pub fn parse_type(lexer: &mut Lexer) -> Result<Expression, String> {
