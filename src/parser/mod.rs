@@ -1,31 +1,10 @@
+use expression::Expression;
+
 use crate::lexer::{token::Token, Lexer};
+use crate::parser::parse_functions::block::parse_block;
 
-#[derive(Debug, Clone)]
-pub enum Expression {
-    Null,
-
-    String(String),
-    Char(char),
-    Int(i64),
-    Float(f64),
-    Identifier(String),
-
-    Prefix {
-        operator: Token,
-        value: Box<Expression>,
-    },
-
-    Infix {
-        left: Box<Expression>,
-        operator: Token,
-        right: Box<Expression>,
-    },
-
-    Postfix {
-        value: Box<Expression>,
-        operator: Token,
-    },
-}
+pub mod expression;
+mod parse_functions;
 
 pub fn parse_source(lexer: &mut Lexer) -> Result<Vec<Expression>, String> {
     let mut expressions = vec![parse_expression(lexer)?];
@@ -86,6 +65,8 @@ fn expr_binding_power(
 
             inner_expression?
         }
+
+        Some(Token::LeftParenCurly) => parse_block(lexer)?,
 
         t => return Err(format!("Unexpected token: {:?}", t)),
     };
