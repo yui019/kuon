@@ -28,7 +28,12 @@ pub fn parse_block(lexer: &mut Lexer) -> Result<Expression, String> {
             }
             Some(Token::RightParenCurly) => break,
 
-            Some(t) => return Err(format!("Unexpected token: {:?}", t)),
+            Some(t) => {
+                return Err(format!(
+                    "Expected semicolon inside block, got {:?}",
+                    t
+                ))
+            }
             None => return Err(format!("Expected }}")),
         }
     }

@@ -22,7 +22,7 @@ pub fn parse_source(lexer: &mut Lexer) -> Result<Vec<Expression>, String> {
             }
 
             Some(token) => {
-                return Err(format!("Unexpected token: {:?}", token))
+                return Err(format!("Expected semicolon, got {:?}", token))
             }
 
             None => break,
@@ -48,7 +48,8 @@ fn expr_binding_power(
         Some(Token::ValueIdentifier(v)) => Expression::Identifier(v),
 
         Some(operator @ Token::Minus) => {
-            let (_, right_binding_power) = prefix_binding_power(&operator)?;
+            let (_, right_binding_power) =
+                prefix_binding_power(&operator).unwrap();
             let right = expr_binding_power(lexer, right_binding_power)?;
 
             Expression::Prefix {
@@ -77,19 +78,13 @@ fn expr_binding_power(
 
     loop {
         let operator = match lexer.peek() {
-            token @ Some(
-                Token::Plus
-                | Token::Minus
-                | Token::Star
-                | Token::Slash
-                | Token::ExclamationMark,
-            ) => token.unwrap(),
+            Some(token) => token,
 
             _ => break,
         };
 
         match postfix_binding_power(&operator) {
-            Ok((left_binding_power, ())) => {
+            Some((left_binding_power, ())) => {
                 if left_binding_power < min_binding_power {
                     break;
                 }
@@ -107,7 +102,7 @@ fn expr_binding_power(
         }
 
         match infix_binding_power(&operator) {
-            Ok((left_binding_power, right_binding_power)) => {
+            Some((left_binding_power, right_binding_power)) => {
                 if left_binding_power < min_binding_power {
                     break;
                 }
@@ -133,27 +128,27 @@ fn expr_binding_power(
     Ok(left)
 }
 
-fn prefix_binding_power(op: &Token) -> Result<((), u8), String> {
+fn prefix_binding_power(op: &Token) -> Option<((), u8)> {
     match op {
-        Token::Minus => Ok(((), 30)),
+        Token::Minus => Some(((), 30)),
 
-        _ => Err(format!("Unexpected token: {:?}", op)),
+        _ => None,
     }
 }
 
-fn infix_binding_power(op: &Token) -> Result<(u8, u8), String> {
+fn infix_binding_power(op: &Token) -> Option<(u8, u8)> {
     match op {
-        Token::Plus | Token::Minus => Ok((10, 11)),
-        Token::Star | Token::Slash => Ok((20, 21)),
+        Token::Plus | Token::Minus => Some((10, 11)),
+        Token::Star | Token::Slash => Some((20, 21)),
 
-        _ => Err(format!("Unexpected token: {:?}", op)),
+        _ => None,
     }
 }
 
-fn postfix_binding_power(op: &Token) -> Result<(u8, ()), String> {
+fn postfix_binding_power(op: &Token) -> Option<(u8, ())> {
     match op {
-        Token::ExclamationMark => Ok((40, ())),
+        Token::ExclamationMark => Some((40, ())),
 
-        _ => Err(format!("Unexpected token: {:?}", op)),
+        _ => None,
     }
 }
