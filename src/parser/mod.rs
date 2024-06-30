@@ -25,11 +25,14 @@ pub enum Expression {
     },
 }
 
-pub fn parse(lexer: &mut Lexer) -> Expression {
+pub fn parse(lexer: &mut Lexer) -> Result<Expression, String> {
     expr_binding_power(lexer, 0)
 }
 
-fn expr_binding_power(lexer: &mut Lexer, min_binding_power: u8) -> Expression {
+fn expr_binding_power(
+    lexer: &mut Lexer,
+    min_binding_power: u8,
+) -> Result<Expression, String> {
     let mut left = match lexer.next() {
         Some(Token::ValueString(v)) => Expression::String(v),
         Some(Token::ValueChar(v)) => Expression::Char(v),
@@ -38,8 +41,8 @@ fn expr_binding_power(lexer: &mut Lexer, min_binding_power: u8) -> Expression {
         Some(Token::ValueIdentifier(v)) => Expression::Identifier(v),
 
         Some(operator @ Token::Minus) => {
-            let (_, right_binding_power) = prefix_binding_power(&operator);
-            let right = expr_binding_power(lexer, right_binding_power);
+            let (_, right_binding_power) = prefix_binding_power(&operator)?;
+            let right = expr_binding_power(lexer, right_binding_power)?;
 
             Expression::Prefix {
                 operator,
@@ -49,11 +52,15 @@ fn expr_binding_power(lexer: &mut Lexer, min_binding_power: u8) -> Expression {
 
         Some(Token::LeftParenNormal) => {
             let left = expr_binding_power(lexer, 0);
-            assert_eq!(lexer.next(), Some(Token::RightParenNormal));
-            left
+
+            if lexer.next() != Some(Token::RightParenNormal) {
+                return Err(format!("Expected ("));
+            }
+
+            left?
         }
 
-        t => panic!("Bad token: {:?}", t),
+        t => return Err(format!("Unexpected token: {:?}", t)),
     };
 
     loop {
@@ -69,67 +76,72 @@ fn expr_binding_power(lexer: &mut Lexer, min_binding_power: u8) -> Expression {
             _ => break,
         };
 
-        if let Some((left_binding_power, ())) = postfix_binding_power(&operator)
-        {
-            if left_binding_power < min_binding_power {
-                break;
+        match postfix_binding_power(&operator) {
+            Ok((left_binding_power, ())) => {
+                if left_binding_power < min_binding_power {
+                    break;
+                }
+
+                lexer.next();
+
+                left = Expression::Postfix {
+                    value: Box::new(left),
+                    operator,
+                };
+                continue;
             }
 
-            lexer.next();
-
-            left = Expression::Postfix {
-                value: Box::new(left),
-                operator,
-            };
-            continue;
+            _ => {}
         }
 
-        if let Some((left_binding_power, right_binding_power)) =
-            infix_binding_power(&operator)
-        {
-            if left_binding_power < min_binding_power {
-                break;
+        match infix_binding_power(&operator) {
+            Ok((left_binding_power, right_binding_power)) => {
+                if left_binding_power < min_binding_power {
+                    break;
+                }
+
+                lexer.next();
+                let right = expr_binding_power(lexer, right_binding_power)?;
+
+                left = Expression::Infix {
+                    left: Box::new(left),
+                    operator,
+                    right: Box::new(right),
+                };
+
+                continue;
             }
 
-            lexer.next();
-            let right = expr_binding_power(lexer, right_binding_power);
-
-            left = Expression::Infix {
-                left: Box::new(left),
-                operator,
-                right: Box::new(right),
-            };
-
-            continue;
+            _ => {}
         }
 
         break;
     }
 
-    left
+    Ok(left)
 }
 
-fn prefix_binding_power(op: &Token) -> ((), u8) {
+fn prefix_binding_power(op: &Token) -> Result<((), u8), String> {
     match op {
-        Token::Minus => ((), 30),
+        Token::Minus => Ok(((), 30)),
 
-        _ => panic!("Bad operator: {:?}", op),
+        _ => Err(format!("Unexpected token: {:?}", op)),
     }
 }
 
-fn infix_binding_power(op: &Token) -> Option<(u8, u8)> {
+fn infix_binding_power(op: &Token) -> Result<(u8, u8), String> {
     match op {
-        Token::Plus | Token::Minus => Some((10, 11)),
-        Token::Star | Token::Slash => Some((20, 21)),
+        Token::Plus | Token::Minus => Ok((10, 11)),
+        Token::Star | Token::Slash => Ok((20, 21)),
 
-        _ => None,
+        _ => Err(format!("Unexpected token: {:?}", op)),
     }
 }
 
-fn postfix_binding_power(op: &Token) -> Option<(u8, ())> {
+fn postfix_binding_power(op: &Token) -> Result<(u8, ()), String> {
     match op {
-        Token::ExclamationMark => Some((40, ())),
+        Token::ExclamationMark => Ok((40, ())),
 
-        _ => None,
+        _ => Err(format!("Unexpected token: {:?}", op)),
     }
 }
