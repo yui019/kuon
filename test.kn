@@ -1,5 +1,7 @@
-if a + b == 3 + 3 {
-    "abc"    
+var a = 2 + 5;
+
+if a == 3 {
+    "abc"
 } else {
     "def"
 }

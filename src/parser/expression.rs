@@ -35,4 +35,10 @@ pub enum Expression {
         true_branch: Box<Expression>,
         else_branch: Option<Box<Expression>>,
     },
+
+    VariableDefinition {
+        constant: bool,
+        name: Token,
+        value: Box<Expression>,
+    },
 }
