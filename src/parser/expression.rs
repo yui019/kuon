@@ -29,4 +29,10 @@ pub enum Expression {
     Block {
         expressions: Vec<Expression>,
     },
+
+    IfCondition {
+        condition: Box<Expression>,
+        true_branch: Box<Expression>,
+        else_branch: Option<Box<Expression>>,
+    },
 }

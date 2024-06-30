@@ -1,4 +1,5 @@
 use expression::Expression;
+use parse_functions::if_condition::parse_if_condition;
 
 use crate::lexer::{token::Token, Lexer};
 use crate::parser::parse_functions::block::parse_block;
@@ -68,7 +69,10 @@ fn expr_binding_power(
 
         Some(Token::LeftParenCurly) => parse_block(lexer)?,
 
-        t => return Err(format!("Unexpected token: {:?}", t)),
+        Some(Token::If) => parse_if_condition(lexer)?,
+
+        None => return Err(format!("Expected expression")),
+        Some(t) => return Err(format!("Unexpected token: {:?}", t)),
     };
 
     loop {
