@@ -27,16 +27,17 @@ pub enum Expression {
     },
 }
 
-pub fn parse_source(lexer: &mut Lexer) -> Result<Expression, String> {
-    let mut expression = parse_expression(lexer);
+pub fn parse_source(lexer: &mut Lexer) -> Result<Vec<Expression>, String> {
+    let mut expressions = vec![parse_expression(lexer)?];
 
     loop {
         match lexer.next() {
             Some(Token::Semicolon) => {
                 if lexer.peek().is_some() {
-                    expression = parse_expression(lexer);
+                    expressions.push(parse_expression(lexer)?);
                 } else {
-                    expression = Ok(Expression::Null);
+                    expressions.push(Expression::Null);
+                    break;
                 }
             }
 
@@ -48,7 +49,7 @@ pub fn parse_source(lexer: &mut Lexer) -> Result<Expression, String> {
         }
     }
 
-    expression
+    Ok(expressions)
 }
 
 fn parse_expression(lexer: &mut Lexer) -> Result<Expression, String> {
