@@ -40,5 +40,10 @@ pub enum Expression {
         constant: bool,
         name: Token,
         value: Box<Expression>,
+        type_: Option<Box<Expression>>,
+    },
+
+    Type {
+        name: Token,
     },
 }

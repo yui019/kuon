@@ -1,6 +1,9 @@
 use crate::lexer::{token::Token, Lexer};
 
-use super::super::{expression::Expression, parse_expression};
+use super::{
+    super::{expression::Expression, parse_expression},
+    r#type::parse_type,
+};
 
 /// Called after Token::LeftParenCurly
 pub fn parse_variable_definition(
@@ -15,9 +18,13 @@ pub fn parse_variable_definition(
 
     let name = name.unwrap();
 
-    if lexer.next() != Some(Token::Equals) {
-        return Err(format!("Expected = after variable name"));
+    let mut type_: Option<Box<Expression>> = None;
+
+    if lexer.peek() != Some(Token::Equals) {
+        type_ = Some(Box::new(parse_type(lexer)?));
     }
+
+    lexer.next();
 
     let value = Box::new(parse_expression(lexer)?);
 
@@ -25,5 +32,6 @@ pub fn parse_variable_definition(
         constant: start_token == Token::Val,
         name,
         value,
+        type_,
     })
 }
