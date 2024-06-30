@@ -4,6 +4,7 @@ use token::Token;
 
 pub mod token;
 
+#[derive(Clone)]
 pub struct Lexer<'a> {
     chars: Chars<'a>,
 }
@@ -13,6 +14,10 @@ impl<'a> Lexer<'a> {
         Self {
             chars: source.chars(),
         }
+    }
+
+    pub fn peek(&self) -> Option<Token> {
+        self.clone().next()
     }
 
     /**
