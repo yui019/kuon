@@ -1,4 +1,7 @@
-use crate::lexer::{token::Token, Lexer};
+use crate::{
+    lexer::{token::Token, Lexer},
+    parser::r#type::Type,
+};
 
 use super::{
     super::{expression::Expression, parse_expression},
@@ -12,13 +15,13 @@ pub fn parse_variable_definition(
 ) -> Result<Expression, String> {
     let name = lexer.next();
 
-    if !matches!(name, Some(Token::ValueIdentifier(_))) {
-        return Err(format!("Variable name should be an identifier"));
-    }
+    let name = match name {
+        Some(Token::ValueIdentifier(identifier)) => identifier,
 
-    let name = name.unwrap();
+        _ => return Err(format!("Variable name should be an identifier")),
+    };
 
-    let mut type_: Option<Box<Expression>> = None;
+    let mut type_: Option<Box<Type>> = None;
 
     if lexer.peek() != Some(Token::Equals) {
         type_ = Some(Box::new(parse_type(lexer)?));

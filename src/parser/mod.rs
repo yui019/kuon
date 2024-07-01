@@ -7,6 +7,7 @@ use crate::parser::parse_functions::block::parse_block;
 
 pub mod expression;
 mod parse_functions;
+pub mod r#type;
 
 pub fn parse_source(lexer: &mut Lexer) -> Result<Vec<Expression>, String> {
     let mut expressions = vec![parse_expression(lexer)?];
@@ -156,8 +157,7 @@ fn infix_binding_power(op: &Token) -> Option<(u8, u8)> {
 
 fn postfix_binding_power(op: &Token) -> Option<(u8, ())> {
     match op {
-        Token::ExclamationMark => Some((40, ())),
-
+        // Token::ExclamationMark => Some((40, ())),
         _ => None,
     }
 }

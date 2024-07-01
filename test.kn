@@ -1,2 +1,11 @@
-var a = 2 + 5;
-val b int = 2 + 5;
+var a = 2 + {
+    var c = "abc";
+
+    if c == "def" {
+        2
+    } else {
+        3
+    }
+};
+
+val b int = a + 3;

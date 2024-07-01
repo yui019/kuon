@@ -1,5 +1,7 @@
 use crate::lexer::token::Token;
 
+use super::r#type::Type;
+
 #[derive(Debug, Clone)]
 pub enum Expression {
     Null,
@@ -38,12 +40,12 @@ pub enum Expression {
 
     VariableDefinition {
         constant: bool,
-        name: Token,
+        name: String,
         value: Box<Expression>,
-        type_: Option<Box<Expression>>,
+        type_: Option<Box<Type>>,
     },
 
     Type {
-        name: Token,
+        type_: Type,
     },
 }
