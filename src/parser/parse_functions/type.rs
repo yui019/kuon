@@ -3,8 +3,6 @@ use crate::{
     parser::r#type::Type,
 };
 
-use super::super::expression::Expression;
-
 /// Called after Token::LeftParenCurly
 pub fn parse_type(lexer: &mut Lexer) -> Result<Type, String> {
     let name = lexer.next();
