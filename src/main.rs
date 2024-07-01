@@ -1,6 +1,7 @@
 use std::fs;
 
-use kuon::{lexer::Lexer, parser};
+use color_print::cprintln;
+use kuon::{analyzer, lexer::Lexer, parser};
 
 fn main() {
     let source = fs::read_to_string("test.kn").unwrap();
@@ -14,5 +15,18 @@ fn main() {
 
     println!("\n========================================\n");
 
-    println!("{:#?}", parser::parse_source(&mut lexer));
+    let mut parse_result = parser::parse_source(&mut lexer);
+    match &mut parse_result {
+        Ok(ref mut ast) => {
+            if let Err(e) = analyzer::type_checking(ast) {
+                cprintln!("<red>[Analyzer error]</red> {}", e);
+            } else {
+                println!("{:#?}", ast);
+            }
+        }
+
+        Err(e) => {
+            cprintln!("<red>[Parser error]</red> {}", e);
+        }
+    }
 }
