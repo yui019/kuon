@@ -132,15 +132,15 @@ pub fn validate_and_get_type(
         Expression::Postfix { .. } => todo!(),
 
         Expression::Block { expressions } => {
-            let mut env_copy = env.clone();
+            let mut block_env = Environment::from_parent(env);
             let mut expressions_copy = expressions.clone();
 
             for mut expression in &mut expressions_copy {
-                validate_and_get_type(&mut expression, &mut env_copy)?;
+                validate_and_get_type(&mut expression, &mut block_env)?;
             }
 
             let last_expression = &expressions_copy[expressions_copy.len() - 1];
-            return validate_and_get_type(last_expression, &mut env_copy);
+            return validate_and_get_type(last_expression, &mut block_env);
         }
 
         Expression::IfCondition {

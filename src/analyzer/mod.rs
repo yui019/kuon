@@ -8,12 +8,10 @@ use crate::{
 mod env;
 mod validate_and_get_type;
 
-pub fn validate(ast: &Vec<Expression>) -> Result<(), String> {
+pub fn validate(ast: &Expression) -> Result<(), String> {
     let mut root_env = Environment::new();
 
-    for expression in ast {
-        validate_expression(expression, &mut root_env)?;
-    }
+    validate_expression(ast, &mut root_env)?;
 
     return Ok(());
 }

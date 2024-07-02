@@ -9,7 +9,7 @@ pub mod expression;
 mod parse_functions;
 pub mod r#type;
 
-pub fn parse_source(lexer: &mut Lexer) -> Result<Vec<Expression>, String> {
+pub fn parse_source(lexer: &mut Lexer) -> Result<Expression, String> {
     let mut expressions = vec![parse_expression(lexer)?];
 
     loop {
@@ -31,7 +31,7 @@ pub fn parse_source(lexer: &mut Lexer) -> Result<Vec<Expression>, String> {
         }
     }
 
-    Ok(expressions)
+    Ok(Expression::Block { expressions })
 }
 
 fn parse_expression(lexer: &mut Lexer) -> Result<Expression, String> {
