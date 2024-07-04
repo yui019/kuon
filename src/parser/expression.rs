@@ -1,4 +1,4 @@
-use crate::lexer::token::Token;
+use crate::lexer::token::TokenData;
 
 use super::r#type::Type;
 
@@ -13,19 +13,19 @@ pub enum Expression {
     Identifier(String),
 
     Prefix {
-        operator: Token,
+        operator: TokenData,
         value: Box<Expression>,
     },
 
     Infix {
         left: Box<Expression>,
-        operator: Token,
+        operator: TokenData,
         right: Box<Expression>,
     },
 
     Postfix {
         value: Box<Expression>,
-        operator: Token,
+        operator: TokenData,
     },
 
     Block {

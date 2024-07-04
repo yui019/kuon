@@ -1,5 +1,11 @@
 #[derive(Debug, Clone, PartialEq)]
-pub enum Token {
+pub struct Token {
+    pub data: TokenData,
+    pub line: usize,
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub enum TokenData {
     LeftParenCurly,  // {
     LeftParenSquare, // [
     LeftParenNormal, // (

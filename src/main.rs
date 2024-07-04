@@ -26,7 +26,7 @@ fn main() {
         }
 
         Err(e) => {
-            cprintln!("<red>[Parser error]</red> {}", e);
+            cprintln!("<red>[Parser error]</red> {:?}", e);
         }
     }
 }

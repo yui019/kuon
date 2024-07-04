@@ -1,20 +1,30 @@
 use expression::Expression;
 use parse_functions::if_condition::parse_if_condition;
 use parse_functions::variable_definition::parse_variable_definition;
+use parser_error::ParserError;
+use util::token_matches;
 
+use crate::lexer::token::TokenData;
 use crate::lexer::{token::Token, Lexer};
 use crate::parser::parse_functions::block::parse_block;
 
 pub mod expression;
 mod parse_functions;
 pub mod r#type;
+mod util;
 
-pub fn parse_source(lexer: &mut Lexer) -> Result<Expression, String> {
+#[macro_use]
+pub mod parser_error;
+
+pub fn parse_source(lexer: &mut Lexer) -> Result<Expression, ParserError> {
     let mut expressions = vec![parse_expression(lexer)?];
 
     loop {
         match lexer.next() {
-            Some(Token::Semicolon) => {
+            Some(Token {
+                data: TokenData::Semicolon,
+                ..
+            }) => {
                 if lexer.peek().is_some() {
                     expressions.push(parse_expression(lexer)?);
                 } else {
@@ -24,7 +34,11 @@ pub fn parse_source(lexer: &mut Lexer) -> Result<Expression, String> {
             }
 
             Some(token) => {
-                return Err(format!("Expected semicolon, got {:?}", token))
+                return Err(parser_error!(
+                    token.line,
+                    "Expected semicolon, got {:?}",
+                    token.data
+                ))
             }
 
             None => break,
@@ -34,50 +48,85 @@ pub fn parse_source(lexer: &mut Lexer) -> Result<Expression, String> {
     Ok(Expression::Block { expressions })
 }
 
-fn parse_expression(lexer: &mut Lexer) -> Result<Expression, String> {
+fn parse_expression(lexer: &mut Lexer) -> Result<Expression, ParserError> {
     expr_binding_power(lexer, 0)
 }
 
 fn expr_binding_power(
     lexer: &mut Lexer,
     min_binding_power: u8,
-) -> Result<Expression, String> {
+) -> Result<Expression, ParserError> {
     let mut left = match lexer.next() {
-        Some(Token::ValueString(v)) => Expression::String(v),
-        Some(Token::ValueChar(v)) => Expression::Char(v),
-        Some(Token::ValueInt(v)) => Expression::Int(v),
-        Some(Token::ValueFloat(v)) => Expression::Float(v),
-        Some(Token::ValueIdentifier(v)) => Expression::Identifier(v),
+        Some(Token {
+            data: TokenData::ValueString(v),
+            ..
+        }) => Expression::String(v),
+        Some(Token {
+            data: TokenData::ValueChar(v),
+            ..
+        }) => Expression::Char(v),
+        Some(Token {
+            data: TokenData::ValueInt(v),
+            ..
+        }) => Expression::Int(v),
+        Some(Token {
+            data: TokenData::ValueFloat(v),
+            ..
+        }) => Expression::Float(v),
+        Some(Token {
+            data: TokenData::ValueIdentifier(v),
+            ..
+        }) => Expression::Identifier(v),
 
-        Some(operator @ Token::Minus) => {
+        Some(
+            operator @ Token {
+                data: TokenData::Minus,
+                ..
+            },
+        ) => {
             let (_, right_binding_power) =
-                prefix_binding_power(&operator).unwrap();
+                prefix_binding_power(&operator.data).unwrap();
             let right = expr_binding_power(lexer, right_binding_power)?;
 
             Expression::Prefix {
-                operator,
+                operator: operator.data,
                 value: Box::new(right),
             }
         }
 
-        Some(Token::LeftParenNormal) => {
+        Some(Token {
+            data: TokenData::LeftParenNormal,
+            ..
+        }) => {
             let inner_expression = parse_expression(lexer);
 
-            if lexer.next() != Some(Token::RightParenNormal) {
-                return Err(format!("Expected ("));
+            let next = lexer.next();
+            if !token_matches(&next, &TokenData::RightParenNormal) {
+                return Err(parser_error!(next.unwrap().line, "Expected ("));
             }
 
             inner_expression?
         }
 
-        Some(Token::LeftParenCurly) => parse_block(lexer)?,
-        Some(Token::If) => parse_if_condition(lexer)?,
-        token @ Some(Token::Val | Token::Var) => {
-            parse_variable_definition(lexer, token.unwrap())?
-        }
+        Some(Token {
+            data: TokenData::LeftParenCurly,
+            ..
+        }) => parse_block(lexer)?,
 
-        None => return Err(format!("Expected expression")),
-        Some(t) => return Err(format!("Unexpected token: {:?}", t)),
+        Some(Token {
+            data: TokenData::If,
+            ..
+        }) => parse_if_condition(lexer)?,
+
+        token @ Some(Token {
+            data: TokenData::Val | TokenData::Var,
+            ..
+        }) => parse_variable_definition(lexer, token.unwrap())?,
+
+        None => return Err(parser_error_eof!("Expected expression")),
+        Some(t) => {
+            return Err(parser_error!(t.line, "Unexpected token: {:?}", t.data))
+        }
     };
 
     loop {
@@ -87,7 +136,7 @@ fn expr_binding_power(
             _ => break,
         };
 
-        match postfix_binding_power(&operator) {
+        match postfix_binding_power(&operator.data) {
             Some((left_binding_power, ())) => {
                 if left_binding_power < min_binding_power {
                     break;
@@ -97,7 +146,7 @@ fn expr_binding_power(
 
                 left = Expression::Postfix {
                     value: Box::new(left),
-                    operator,
+                    operator: operator.data,
                 };
                 continue;
             }
@@ -105,7 +154,7 @@ fn expr_binding_power(
             _ => {}
         }
 
-        match infix_binding_power(&operator) {
+        match infix_binding_power(&operator.data) {
             Some((left_binding_power, right_binding_power)) => {
                 if left_binding_power < min_binding_power {
                     break;
@@ -116,7 +165,7 @@ fn expr_binding_power(
 
                 left = Expression::Infix {
                     left: Box::new(left),
-                    operator,
+                    operator: operator.data,
                     right: Box::new(right),
                 };
 
@@ -132,30 +181,30 @@ fn expr_binding_power(
     Ok(left)
 }
 
-fn prefix_binding_power(op: &Token) -> Option<((), u8)> {
+fn prefix_binding_power(op: &TokenData) -> Option<((), u8)> {
     match op {
-        Token::Minus => Some(((), 30)),
+        TokenData::Minus => Some(((), 30)),
 
         _ => None,
     }
 }
 
-fn infix_binding_power(op: &Token) -> Option<(u8, u8)> {
+fn infix_binding_power(op: &TokenData) -> Option<(u8, u8)> {
     match op {
-        Token::Plus | Token::Minus => Some((10, 11)),
-        Token::Star | Token::Slash => Some((20, 21)),
+        TokenData::Plus | TokenData::Minus => Some((10, 11)),
+        TokenData::Star | TokenData::Slash => Some((20, 21)),
 
-        Token::EqualsEquals
-        | Token::LessThan
-        | Token::LessThanOrEqual
-        | Token::GreaterThan
-        | Token::GreaterThanOrEqual => Some((0, 1)),
+        TokenData::EqualsEquals
+        | TokenData::LessThan
+        | TokenData::LessThanOrEqual
+        | TokenData::GreaterThan
+        | TokenData::GreaterThanOrEqual => Some((0, 1)),
 
         _ => None,
     }
 }
 
-fn postfix_binding_power(op: &Token) -> Option<(u8, ())> {
+fn postfix_binding_power(op: &TokenData) -> Option<(u8, ())> {
     match op {
         // Token::ExclamationMark => Some((40, ())),
         _ => None,

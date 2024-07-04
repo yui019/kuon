@@ -1,12 +1,21 @@
-use crate::lexer::{token::Token, Lexer};
+use crate::{
+    lexer::{
+        token::{Token, TokenData},
+        Lexer,
+    },
+    parser::parser_error::ParserError,
+    parser_error, parser_error_eof,
+};
 
-use super::super::{expression::Expression, parse_expression};
+use super::super::{
+    expression::Expression, parse_expression, util::token_matches,
+};
 
 /// Called after Token::LeftParenCurly
-pub fn parse_block(lexer: &mut Lexer) -> Result<Expression, String> {
+pub fn parse_block(lexer: &mut Lexer) -> Result<Expression, ParserError> {
     let mut expressions: Vec<Expression> = vec![];
 
-    if lexer.peek() == Some(Token::RightParenCurly) {
+    if token_matches(&lexer.peek(), &TokenData::RightParenCurly) {
         lexer.next();
         expressions.push(Expression::Null);
 
@@ -17,8 +26,11 @@ pub fn parse_block(lexer: &mut Lexer) -> Result<Expression, String> {
         expressions.push(parse_expression(lexer)?);
 
         match lexer.next() {
-            Some(Token::Semicolon) => {
-                if lexer.peek() == Some(Token::RightParenCurly) {
+            Some(Token {
+                data: TokenData::Semicolon,
+                ..
+            }) => {
+                if token_matches(&lexer.peek(), &TokenData::RightParenCurly) {
                     lexer.next();
                     expressions.push(Expression::Null);
                     break;
@@ -26,15 +38,20 @@ pub fn parse_block(lexer: &mut Lexer) -> Result<Expression, String> {
 
                 continue;
             }
-            Some(Token::RightParenCurly) => break,
+
+            Some(Token {
+                data: TokenData::RightParenCurly,
+                ..
+            }) => break,
 
             Some(t) => {
-                return Err(format!(
+                return Err(parser_error!(
+                    t.line,
                     "Expected semicolon inside block, got {:?}",
-                    t
+                    t.data
                 ))
             }
-            None => return Err(format!("Expected }}")),
+            None => return Err(parser_error_eof!("Expected }}")),
         }
     }
 

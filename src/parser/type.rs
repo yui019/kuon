@@ -1,6 +1,11 @@
-use crate::lexer::token::Token;
-
 #[derive(Debug, Clone, PartialEq)]
-pub struct Type {
-    pub name: Token,
+pub enum Type {
+    Any,
+    Null,
+    Int,
+    Uint,
+    Float,
+    Bool,
+    Char,
+    String,
 }

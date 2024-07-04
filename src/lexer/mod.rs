@@ -1,18 +1,20 @@
 use std::str::Chars;
 
-use token::Token;
+use token::{Token, TokenData};
 
 pub mod token;
 
 #[derive(Clone)]
 pub struct Lexer<'a> {
     chars: Chars<'a>,
+    current_line: usize,
 }
 
 impl<'a> Lexer<'a> {
     pub fn from_string(source: &'a String) -> Self {
         Self {
             chars: source.chars(),
+            current_line: 1,
         }
     }
 
@@ -20,11 +22,23 @@ impl<'a> Lexer<'a> {
         self.clone().next()
     }
 
+    /// Wrapper over calling .next on the chars field which increments the line
+    /// counter if needed
+    pub fn chars_next(&mut self) -> Option<char> {
+        let c = self.chars.next();
+
+        if c == Some('\n') {
+            self.current_line += 1;
+        }
+
+        c
+    }
+
     /**
      * Returns all collected chars in a string, as well as whether EOF was
      * reached while collecting
      */
-    fn collect_chars(&self, n: u32) -> (String, bool) {
+    fn collect_chars(&mut self, n: u32) -> (String, bool) {
         let mut result = String::new();
         let mut chars_clone = self.chars.clone();
 
@@ -45,7 +59,7 @@ impl<'a> Lexer<'a> {
      * Returns all collected chars in a string, as well as whether EOF was
      * reached while collecting
      */
-    fn collect_while<F>(&self, rule: F) -> (String, bool)
+    fn collect_while<F>(&mut self, rule: F) -> (String, bool)
     where
         F: Fn(char) -> bool,
     {
@@ -71,13 +85,15 @@ impl<'a> Lexer<'a> {
 
     fn skip_chars(&mut self, n: usize) {
         for _ in 0..n {
-            self.chars.next();
+            self.chars_next();
         }
     }
 
     fn skip_to_end(&mut self) {
         loop {
-            if self.chars.next().is_none() {
+            let new_char = self.chars_next();
+
+            if new_char.is_none() {
                 break;
             }
         }
@@ -88,7 +104,7 @@ impl<'a> Iterator for Lexer<'a> {
     type Item = Token;
 
     fn next(&mut self) -> Option<Self::Item> {
-        let char = self.chars.next();
+        let char = self.chars_next();
 
         // handle end of file
         if char.is_none() {
@@ -99,7 +115,7 @@ impl<'a> Iterator for Lexer<'a> {
 
         // skip whitespace
         while char.is_whitespace() {
-            let new_char = self.chars.next();
+            let new_char = self.chars_next();
             // handle end of file
             if new_char.is_none() {
                 return None;
@@ -113,36 +129,69 @@ impl<'a> Iterator for Lexer<'a> {
                 if self.collect_chars(1).0 == "=" {
                     self.skip_chars(1);
 
-                    return Some(Token::ExclamationEquals);
+                    return Some(Token {
+                        data: TokenData::ExclamationEquals,
+                        line: self.current_line,
+                    });
                 }
 
-                return Some(Token::ExclamationMark);
+                return Some(Token {
+                    data: TokenData::ExclamationMark,
+                    line: self.current_line,
+                });
             }
 
-            '(' => return Some(Token::LeftParenNormal),
-            ')' => return Some(Token::RightParenNormal),
+            '(' => {
+                return Some(Token {
+                    data: TokenData::LeftParenNormal,
+                    line: self.current_line,
+                })
+            }
+            ')' => {
+                return Some(Token {
+                    data: TokenData::RightParenNormal,
+                    line: self.current_line,
+                })
+            }
 
             '*' => {
                 if self.collect_chars(1).0 == "=" {
                     self.skip_chars(1);
 
-                    return Some(Token::StarEquals);
+                    return Some(Token {
+                        data: TokenData::StarEquals,
+                        line: self.current_line,
+                    });
                 }
 
-                return Some(Token::Star);
+                return Some(Token {
+                    data: TokenData::Star,
+                    line: self.current_line,
+                });
             }
 
             '+' => {
                 if self.collect_chars(1).0 == "=" {
                     self.skip_chars(1);
 
-                    return Some(Token::PlusEquals);
+                    return Some(Token {
+                        data: TokenData::PlusEquals,
+                        line: self.current_line,
+                    });
                 }
 
-                return Some(Token::Plus);
+                return Some(Token {
+                    data: TokenData::Plus,
+                    line: self.current_line,
+                });
             }
 
-            ',' => return Some(Token::Comma),
+            ',' => {
+                return Some(Token {
+                    data: TokenData::Comma,
+                    line: self.current_line,
+                })
+            }
 
             '-' => {
                 let (next1, _) = self.collect_chars(1);
@@ -150,33 +199,51 @@ impl<'a> Iterator for Lexer<'a> {
                 if next1 == "=" {
                     self.skip_chars(1);
 
-                    return Some(Token::MinusEquals);
+                    return Some(Token {
+                        data: TokenData::MinusEquals,
+                        line: self.current_line,
+                    });
                 }
 
                 if next1 == ">" {
                     self.skip_chars(1);
 
-                    return Some(Token::MatchArrow);
+                    return Some(Token {
+                        data: TokenData::MatchArrow,
+                        line: self.current_line,
+                    });
                 }
 
-                return Some(Token::Minus);
+                return Some(Token {
+                    data: TokenData::Minus,
+                    line: self.current_line,
+                });
             }
 
             '.' => {
                 if self.collect_chars(2).0 == ".." {
                     self.skip_chars(2);
 
-                    return Some(Token::ThreeDots);
+                    return Some(Token {
+                        data: TokenData::ThreeDots,
+                        line: self.current_line,
+                    });
                 }
 
-                return Some(Token::Dot);
+                return Some(Token {
+                    data: TokenData::Dot,
+                    line: self.current_line,
+                });
             }
 
             '/' => {
                 if self.collect_chars(1).0 == "=" {
                     self.skip_chars(1);
 
-                    return Some(Token::SlashEquals);
+                    return Some(Token {
+                        data: TokenData::SlashEquals,
+                        line: self.current_line,
+                    });
                 }
 
                 // if it's a comment, skip until end of line and return the
@@ -188,63 +255,113 @@ impl<'a> Iterator for Lexer<'a> {
                     return self.next();
                 }
 
-                return Some(Token::Slash);
+                return Some(Token {
+                    data: TokenData::Slash,
+                    line: self.current_line,
+                });
             }
 
             ':' => {
                 if self.collect_chars(1).0 == ":" {
                     self.skip_chars(1);
 
-                    return Some(Token::DoubleColon);
+                    return Some(Token {
+                        data: TokenData::DoubleColon,
+                        line: self.current_line,
+                    });
                 }
 
-                return Some(Token::Colon);
+                return Some(Token {
+                    data: TokenData::Colon,
+                    line: self.current_line,
+                });
             }
 
-            ';' => return Some(Token::Semicolon),
+            ';' => {
+                return Some(Token {
+                    data: TokenData::Semicolon,
+                    line: self.current_line,
+                })
+            }
 
             '<' => {
                 if self.collect_chars(1).0 == "=" {
                     self.skip_chars(1);
 
-                    return Some(Token::LessThanOrEqual);
+                    return Some(Token {
+                        data: TokenData::LessThanOrEqual,
+                        line: self.current_line,
+                    });
                 }
 
-                return Some(Token::LessThan);
+                return Some(Token {
+                    data: TokenData::LessThan,
+                    line: self.current_line,
+                });
             }
 
             '=' => {
                 if self.collect_chars(1).0 == "=" {
                     self.skip_chars(1);
 
-                    return Some(Token::EqualsEquals);
+                    return Some(Token {
+                        data: TokenData::EqualsEquals,
+                        line: self.current_line,
+                    });
                 }
 
-                return Some(Token::Equals);
+                return Some(Token {
+                    data: TokenData::Equals,
+                    line: self.current_line,
+                });
             }
 
             '>' => {
                 if self.collect_chars(1).0 == "=" {
                     self.skip_chars(1);
 
-                    return Some(Token::GreaterThanOrEqual);
+                    return Some(Token {
+                        data: TokenData::GreaterThanOrEqual,
+                        line: self.current_line,
+                    });
                 }
 
-                return Some(Token::GreaterThan);
+                return Some(Token {
+                    data: TokenData::GreaterThan,
+                    line: self.current_line,
+                });
             }
 
-            '?' => return Some(Token::QuestionMark),
+            '?' => {
+                return Some(Token {
+                    data: TokenData::QuestionMark,
+                    line: self.current_line,
+                })
+            }
 
             'T' => {
                 if self.collect_chars(3).0 == "his" {
                     self.skip_chars(3);
 
-                    return Some(Token::ThisCapital);
+                    return Some(Token {
+                        data: TokenData::ThisCapital,
+                        line: self.current_line,
+                    });
                 }
             }
 
-            '[' => return Some(Token::LeftParenSquare),
-            ']' => return Some(Token::RightParenSquare),
+            '[' => {
+                return Some(Token {
+                    data: TokenData::LeftParenSquare,
+                    line: self.current_line,
+                })
+            }
+            ']' => {
+                return Some(Token {
+                    data: TokenData::RightParenSquare,
+                    line: self.current_line,
+                })
+            }
 
             'a' => {
                 let (next, _) = self.collect_while(|c| c.is_alphabetic());
@@ -252,25 +369,37 @@ impl<'a> Iterator for Lexer<'a> {
                 if next == "nd" {
                     self.skip_chars(2);
 
-                    return Some(Token::And);
+                    return Some(Token {
+                        data: TokenData::And,
+                        line: self.current_line,
+                    });
                 }
 
                 if next == "ny" {
                     self.skip_chars(2);
 
-                    return Some(Token::Any);
+                    return Some(Token {
+                        data: TokenData::Any,
+                        line: self.current_line,
+                    });
                 }
 
                 if next == "rray" {
                     self.skip_chars(4);
 
-                    return Some(Token::Array);
+                    return Some(Token {
+                        data: TokenData::Array,
+                        line: self.current_line,
+                    });
                 }
 
                 if next == "s" {
                     self.skip_chars(1);
 
-                    return Some(Token::As);
+                    return Some(Token {
+                        data: TokenData::As,
+                        line: self.current_line,
+                    });
                 }
             }
 
@@ -280,7 +409,10 @@ impl<'a> Iterator for Lexer<'a> {
                 if next == "ool" {
                     self.skip_chars(3);
 
-                    return Some(Token::Bool);
+                    return Some(Token {
+                        data: TokenData::Bool,
+                        line: self.current_line,
+                    });
                 }
             }
 
@@ -290,7 +422,10 @@ impl<'a> Iterator for Lexer<'a> {
                 if next == "har" {
                     self.skip_chars(3);
 
-                    return Some(Token::Char);
+                    return Some(Token {
+                        data: TokenData::Char,
+                        line: self.current_line,
+                    });
                 }
             }
 
@@ -300,13 +435,19 @@ impl<'a> Iterator for Lexer<'a> {
                 if next == "lse" {
                     self.skip_chars(3);
 
-                    return Some(Token::Else);
+                    return Some(Token {
+                        data: TokenData::Else,
+                        line: self.current_line,
+                    });
                 }
 
                 if next == "num" {
                     self.skip_chars(3);
 
-                    return Some(Token::Enum);
+                    return Some(Token {
+                        data: TokenData::Enum,
+                        line: self.current_line,
+                    });
                 }
             }
 
@@ -316,13 +457,19 @@ impl<'a> Iterator for Lexer<'a> {
                 if next == "loat" {
                     self.skip_chars(4);
 
-                    return Some(Token::Float);
+                    return Some(Token {
+                        data: TokenData::Float,
+                        line: self.current_line,
+                    });
                 }
 
                 if next == "un" {
                     self.skip_chars(2);
 
-                    return Some(Token::Fun);
+                    return Some(Token {
+                        data: TokenData::Fun,
+                        line: self.current_line,
+                    });
                 }
             }
 
@@ -332,19 +479,28 @@ impl<'a> Iterator for Lexer<'a> {
                 if next == "f" {
                     self.skip_chars(1);
 
-                    return Some(Token::If);
+                    return Some(Token {
+                        data: TokenData::If,
+                        line: self.current_line,
+                    });
                 }
 
                 if next == "nterface" {
                     self.skip_chars(8);
 
-                    return Some(Token::Interface);
+                    return Some(Token {
+                        data: TokenData::Interface,
+                        line: self.current_line,
+                    });
                 }
 
                 if next == "nt" {
                     self.skip_chars(2);
 
-                    return Some(Token::Int);
+                    return Some(Token {
+                        data: TokenData::Int,
+                        line: self.current_line,
+                    });
                 }
             }
 
@@ -354,13 +510,19 @@ impl<'a> Iterator for Lexer<'a> {
                 if next == "atch" {
                     self.skip_chars(4);
 
-                    return Some(Token::Match);
+                    return Some(Token {
+                        data: TokenData::Match,
+                        line: self.current_line,
+                    });
                 }
 
                 if next == "ap" {
                     self.skip_chars(2);
 
-                    return Some(Token::Map);
+                    return Some(Token {
+                        data: TokenData::Map,
+                        line: self.current_line,
+                    });
                 }
             }
 
@@ -370,19 +532,28 @@ impl<'a> Iterator for Lexer<'a> {
                 if next == "ot" {
                     self.skip_chars(2);
 
-                    return Some(Token::Not);
+                    return Some(Token {
+                        data: TokenData::Not,
+                        line: self.current_line,
+                    });
                 }
 
                 if next == "ullable" {
                     self.skip_chars(7);
 
-                    return Some(Token::Nullable);
+                    return Some(Token {
+                        data: TokenData::Nullable,
+                        line: self.current_line,
+                    });
                 }
 
                 if next == "ull" {
                     self.skip_chars(3);
 
-                    return Some(Token::Null);
+                    return Some(Token {
+                        data: TokenData::Null,
+                        line: self.current_line,
+                    });
                 }
             }
 
@@ -392,7 +563,10 @@ impl<'a> Iterator for Lexer<'a> {
                 if next == "r" {
                     self.skip_chars(1);
 
-                    return Some(Token::Or);
+                    return Some(Token {
+                        data: TokenData::Or,
+                        line: self.current_line,
+                    });
                 }
             }
 
@@ -402,7 +576,10 @@ impl<'a> Iterator for Lexer<'a> {
                 if next == "ef" {
                     self.skip_chars(2);
 
-                    return Some(Token::Ref);
+                    return Some(Token {
+                        data: TokenData::Ref,
+                        line: self.current_line,
+                    });
                 }
             }
 
@@ -412,13 +589,19 @@ impl<'a> Iterator for Lexer<'a> {
                 if next == "tring" {
                     self.skip_chars(5);
 
-                    return Some(Token::String);
+                    return Some(Token {
+                        data: TokenData::String,
+                        line: self.current_line,
+                    });
                 }
 
                 if next == "truct" {
                     self.skip_chars(5);
 
-                    return Some(Token::Struct);
+                    return Some(Token {
+                        data: TokenData::Struct,
+                        line: self.current_line,
+                    });
                 }
             }
 
@@ -428,7 +611,10 @@ impl<'a> Iterator for Lexer<'a> {
                 if next == "his" {
                     self.skip_chars(3);
 
-                    return Some(Token::ThisNoncapital);
+                    return Some(Token {
+                        data: TokenData::ThisNoncapital,
+                        line: self.current_line,
+                    });
                 }
             }
 
@@ -438,7 +624,10 @@ impl<'a> Iterator for Lexer<'a> {
                 if next == "int" {
                     self.skip_chars(3);
 
-                    return Some(Token::Uint);
+                    return Some(Token {
+                        data: TokenData::Uint,
+                        line: self.current_line,
+                    });
                 }
             }
 
@@ -448,32 +637,54 @@ impl<'a> Iterator for Lexer<'a> {
                 if next == "al" {
                     self.skip_chars(2);
 
-                    return Some(Token::Val);
+                    return Some(Token {
+                        data: TokenData::Val,
+                        line: self.current_line,
+                    });
                 }
 
                 if next == "ar" {
                     self.skip_chars(2);
 
-                    return Some(Token::Var);
+                    return Some(Token {
+                        data: TokenData::Var,
+                        line: self.current_line,
+                    });
                 }
             }
 
-            '{' => return Some(Token::LeftParenCurly),
-            '}' => return Some(Token::RightParenCurly),
+            '{' => {
+                return Some(Token {
+                    data: TokenData::LeftParenCurly,
+                    line: self.current_line,
+                })
+            }
+            '}' => {
+                return Some(Token {
+                    data: TokenData::RightParenCurly,
+                    line: self.current_line,
+                })
+            }
 
             '"' => {
                 let (value, reached_eof) = self.collect_while(|c| c != '"');
                 if reached_eof {
                     self.skip_to_end();
 
-                    return Some(Token::Error(
-                        "Unmatched \" at end of file".to_string(),
-                    ));
+                    return Some(Token {
+                        data: TokenData::Error(
+                            "Unmatched \" at end of file".to_string(),
+                        ),
+                        line: self.current_line,
+                    });
                 }
 
                 self.skip_chars(value.len() + 1);
 
-                return Some(Token::ValueString(value));
+                return Some(Token {
+                    data: TokenData::ValueString(value),
+                    line: self.current_line,
+                });
             }
 
             '\'' => {
@@ -481,28 +692,37 @@ impl<'a> Iterator for Lexer<'a> {
                 if reached_eof {
                     self.skip_to_end();
 
-                    return Some(Token::Error(
-                        "Unmatched ' at end of file".to_string(),
-                    ));
+                    return Some(Token {
+                        data: TokenData::Error(
+                            "Unmatched ' at end of file".to_string(),
+                        ),
+                        line: self.current_line,
+                    });
                 }
 
                 self.skip_chars(value.len() + 1);
 
                 if value.len() == 0 {
-                    return Some(Token::Error(
-                        "Empty char is invalid".to_string(),
-                    ));
+                    return Some(Token {
+                        data: TokenData::Error(
+                            "Empty char is invalid".to_string(),
+                        ),
+                        line: self.current_line,
+                    });
                 }
 
                 if value.len() > 1 {
-                    return Some(Token::Error(
+                    return Some(Token { data: TokenData::Error(
                         "Only one character is allowed inside single quotes"
                             .to_string(),
-                    ));
+                    ), line: self.current_line });
                 }
 
                 let char = value.chars().next().unwrap();
-                return Some(Token::ValueChar(char));
+                return Some(Token {
+                    data: TokenData::ValueChar(char),
+                    line: self.current_line,
+                });
             }
 
             '0'..='9' => {
@@ -523,12 +743,18 @@ impl<'a> Iterator for Lexer<'a> {
                     self.skip_chars(fractional_part.len());
 
                     let full_float = digits + "." + &fractional_part;
-                    return Some(Token::ValueFloat(
-                        full_float.parse::<f64>().unwrap(),
-                    ));
+                    return Some(Token {
+                        data: TokenData::ValueFloat(
+                            full_float.parse::<f64>().unwrap(),
+                        ),
+                        line: self.current_line,
+                    });
                 }
 
-                return Some(Token::ValueInt(digits.parse::<i64>().unwrap()));
+                return Some(Token {
+                    data: TokenData::ValueInt(digits.parse::<i64>().unwrap()),
+                    line: self.current_line,
+                });
             }
 
             _ => {}
@@ -542,9 +768,15 @@ impl<'a> Iterator for Lexer<'a> {
             // add first char to identifier
             let identifier = char.to_string() + &identifier;
 
-            return Some(Token::ValueIdentifier(identifier));
+            return Some(Token {
+                data: TokenData::ValueIdentifier(identifier),
+                line: self.current_line,
+            });
         }
 
-        return Some(Token::Error("Unknown token".to_string()));
+        return Some(Token {
+            data: TokenData::Error("Unknown token".to_string()),
+            line: self.current_line,
+        });
     }
 }

@@ -1,5 +1,5 @@
 use crate::{
-    lexer::token::Token,
+    lexer::token::TokenData,
     parser::{expression::Expression, r#type::Type},
 };
 
@@ -10,19 +10,15 @@ pub fn validate_and_get_type(
     env: &mut Environment,
 ) -> Result<Type, String> {
     match expression {
-        Expression::Null => return Ok(Type { name: Token::Null }),
+        Expression::Null => return Ok(Type::Null),
 
-        Expression::String(_) => {
-            return Ok(Type {
-                name: Token::String,
-            })
-        }
+        Expression::String(_) => return Ok(Type::String),
 
-        Expression::Char(_) => return Ok(Type { name: Token::Char }),
+        Expression::Char(_) => return Ok(Type::Char),
 
-        Expression::Int(_) => return Ok(Type { name: Token::Int }),
+        Expression::Int(_) => return Ok(Type::Int),
 
-        Expression::Float(_) => return Ok(Type { name: Token::Float }),
+        Expression::Float(_) => return Ok(Type::Float),
 
         Expression::Identifier(identifier) => {
             if let Some(variable) = env.get_variable(&identifier) {
@@ -33,14 +29,12 @@ pub fn validate_and_get_type(
         }
 
         Expression::Prefix { operator, value } => {
-            if *operator != Token::Minus {
+            if *operator != TokenData::Minus {
                 unreachable!();
             }
 
             match validate_and_get_type(value, env)? {
-                type_ @ Type {
-                    name: Token::Int | Token::Uint,
-                } => return Ok(type_),
+                type_ @ (Type::Int | Type::Uint)  => return Ok(type_),
 
                 type_ => return Err(format!("Prefix operator - can not work on an expression of type {:?}", type_)),
             }
@@ -51,31 +45,26 @@ pub fn validate_and_get_type(
             operator,
             right,
         } => {
-            if *operator == Token::Minus
-                || *operator == Token::Plus
-                || *operator == Token::Star
-                || *operator == Token::Slash
+            if *operator == TokenData::Minus
+                || *operator == TokenData::Plus
+                || *operator == TokenData::Star
+                || *operator == TokenData::Slash
             {
                 let left_type = validate_and_get_type(left, env)?;
                 let right_type = validate_and_get_type(right, env)?;
 
                 match (left_type, right_type) {
-                    (
-                        Type { name: Token::Uint },
-                        Type { name: Token::Uint },
-                    ) if *operator != Token::Minus => {
-                        return Ok(Type { name: Token::Uint });
+                    (Type::Uint, Type::Uint)
+                        if *operator != TokenData::Minus =>
+                    {
+                        return Ok(Type::Uint);
                     }
 
                     (
-                        Type {
-                            name: Token::Int | Token::Uint | Token::Float,
-                        },
-                        Type {
-                            name: Token::Int | Token::Uint | Token::Float,
-                        },
+                        Type::Int | Type::Uint | Type::Float,
+                        Type::Int | Type::Uint | Type::Float,
                     ) => {
-                        return Ok(Type { name: Token::Int });
+                        return Ok(Type::Int);
                     }
 
                     _ => {
@@ -85,24 +74,20 @@ pub fn validate_and_get_type(
                         ))
                     }
                 }
-            } else if *operator == Token::LessThan
-                || *operator == Token::LessThanOrEqual
-                || *operator == Token::GreaterThan
-                || *operator == Token::GreaterThanOrEqual
+            } else if *operator == TokenData::LessThan
+                || *operator == TokenData::LessThanOrEqual
+                || *operator == TokenData::GreaterThan
+                || *operator == TokenData::GreaterThanOrEqual
             {
                 let left_type = validate_and_get_type(left, env)?;
                 let right_type = validate_and_get_type(right, env)?;
 
                 match (left_type, right_type) {
                     (
-                        Type {
-                            name: Token::Int | Token::Uint | Token::Float,
-                        },
-                        Type {
-                            name: Token::Int | Token::Uint | Token::Float,
-                        },
+                        Type::Int | Type::Uint | Type::Float,
+                        Type::Int | Type::Uint | Type::Float,
                     ) => {
-                        return Ok(Type { name: Token::Bool });
+                        return Ok(Type::Bool);
                     }
 
                     _ => {
@@ -112,12 +97,12 @@ pub fn validate_and_get_type(
                         ))
                     }
                 }
-            } else if *operator == Token::EqualsEquals {
+            } else if *operator == TokenData::EqualsEquals {
                 let left_type = validate_and_get_type(left, env)?;
                 let right_type = validate_and_get_type(right, env)?;
 
                 if left_type == right_type {
-                    return Ok(Type { name: Token::Bool });
+                    return Ok(Type::Bool);
                 } else {
                     return Err(format!(
                         "Operator {:?} only works on operands of the same type",
@@ -149,7 +134,7 @@ pub fn validate_and_get_type(
             else_branch,
         } => {
             let condition_type = validate_and_get_type(&condition, env)?;
-            if !matches!(condition_type, Type { name: Token::Bool }) {
+            if !matches!(condition_type, Type::Bool) {
                 return Err(format!("The condition needs to be a boolean"));
             }
 
@@ -188,7 +173,7 @@ pub fn validate_and_get_type(
                 env.add_variable(name.clone(), type_);
             }
 
-            return Ok(Type { name: Token::Null });
+            return Ok(Type::Null);
         }
 
         Expression::Type { .. } => {
