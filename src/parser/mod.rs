@@ -1,4 +1,5 @@
 use expression::Expression;
+use parse_functions::function_arguments::parse_function_arguments;
 use parse_functions::function_definition::parse_function_definition;
 use parse_functions::if_condition::parse_if_condition;
 use parse_functions::variable_definition::parse_variable_definition;
@@ -173,10 +174,20 @@ fn expr_binding_power(
 
                 lexer.next();
 
-                left = Expression::Postfix {
-                    value: Box::new(left),
-                    operator: operator.data,
+                left = match operator.data {
+                    // function call
+                    TokenData::LeftParenNormal => Expression::FunctionCall {
+                        function: Box::new(left),
+                        arguments: parse_function_arguments(lexer)?,
+                    },
+
+                    // else
+                    _ => Expression::Postfix {
+                        value: Box::new(left),
+                        operator: operator.data,
+                    },
                 };
+
                 continue;
             }
 
@@ -235,7 +246,7 @@ fn infix_binding_power(op: &TokenData) -> Option<(u8, u8)> {
 
 fn postfix_binding_power(op: &TokenData) -> Option<(u8, ())> {
     match op {
-        // Token::ExclamationMark => Some((40, ())),
+        TokenData::LeftParenNormal => Some((40, ())),
         _ => None,
     }
 }

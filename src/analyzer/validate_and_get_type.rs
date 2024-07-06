@@ -21,7 +21,12 @@ pub fn validate_and_get_type(
         Expression::Float(_) => return Ok(Type::Float),
 
         Expression::Identifier(identifier) => {
-            if let Some(variable) = env.get_variable(&identifier) {
+            if let Some(function) = env.get_function(&identifier) {
+                return Ok(Type::Function {
+                    param_types: function.param_types,
+                    return_type: Box::new(function.return_type),
+                });
+            } else if let Some(variable) = env.get_variable(&identifier) {
                 return Ok(variable.type_);
             } else {
                 return Err(format!("Unknown variable: {}", identifier));
@@ -177,19 +182,79 @@ pub fn validate_and_get_type(
         }
 
         Expression::FunctionDefinition {
+            name,
             params,
             return_type,
-            ..
+            body,
         } => {
             let mut param_types: Vec<Type> = vec![];
             for param in params {
                 param_types.push(param.type_.clone());
             }
 
+            if name.is_some() {
+                env.add_function(
+                    name.clone().unwrap(),
+                    param_types.clone(),
+                    return_type.clone(),
+                );
+            }
+
+            // validate inner body of function
+            let mut body_env = Environment::from_parent(&env);
+            for param in params {
+                body_env.add_variable(param.name.clone(), param.type_.clone());
+            }
+            validate_and_get_type(&body, &mut body_env)?;
+
             return Ok(Type::Function {
                 param_types,
                 return_type: Box::new(return_type.clone()),
             });
+        }
+
+        Expression::FunctionCall {
+            function,
+            arguments,
+        } => {
+            let function_type = validate_and_get_type(&function, env)?;
+
+            let return_type: Type;
+            let param_types: Vec<Type>;
+
+            match function_type {
+                Type::Function {
+                    return_type: a,
+                    param_types: b,
+                } => {
+                    return_type = *a.clone();
+                    param_types = b;
+                }
+
+                _ => return Err(format!("Not a function: {:?}", *function)),
+            };
+
+            if arguments.len() != param_types.len() {
+                return Err(format!(
+                    "Expected {} arguments, {} provided",
+                    param_types.len(),
+                    arguments.len()
+                ));
+            }
+
+            for i in 0..param_types.len() {
+                let argument_type = validate_and_get_type(&arguments[i], env)?;
+                let param_type = param_types[i].clone();
+
+                if argument_type != param_type {
+                    return Err(format!(
+                        "Expected value of type {:?}",
+                        param_type
+                    ));
+                }
+            }
+
+            return Ok(return_type);
         }
 
         Expression::Type { .. } => {

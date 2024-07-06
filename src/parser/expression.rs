@@ -58,6 +58,11 @@ pub enum Expression {
         body: Box<Expression>,
     },
 
+    FunctionCall {
+        function: Box<Expression>,
+        arguments: Vec<Expression>,
+    },
+
     Type {
         type_: Type,
     },
