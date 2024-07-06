@@ -7,3 +7,10 @@ pub fn token_matches(token: &Option<Token>, token_data: &TokenData) -> bool {
         _ => false,
     }
 }
+
+#[macro_export]
+macro_rules! token_data {
+    ($data:pat) => {
+        Token { data: $data, .. }
+    };
+}

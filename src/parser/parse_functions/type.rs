@@ -4,7 +4,7 @@ use crate::{
         Lexer,
     },
     parser::{parser_error::ParserError, r#type::Type},
-    parser_error, parser_error_eof,
+    parser_error, parser_error_eof, token_data,
 };
 
 /// Called after Token::LeftParenCurly
@@ -13,18 +13,16 @@ pub fn parse_type(lexer: &mut Lexer) -> Result<Type, ParserError> {
 
     let name = match name {
         Some(
-            token @ Token {
-                data:
-                    TokenData::Any
+            token @ token_data!(
+                TokenData::Any
                     | TokenData::Null
                     | TokenData::Int
                     | TokenData::Uint
                     | TokenData::Float
                     | TokenData::Bool
                     | TokenData::Char
-                    | TokenData::String,
-                ..
-            },
+                    | TokenData::String
+            ),
         ) => token.data,
 
         None => return Err(parser_error_eof!("Expected type")),

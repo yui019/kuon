@@ -7,7 +7,7 @@ use crate::{
         expression::FunctionParam, parse_expression, parser_error::ParserError,
         util::token_matches,
     },
-    parser_error, parser_error_eof,
+    parser_error, parser_error_eof, token_data,
 };
 
 use super::{super::expression::Expression, r#type::parse_type};
@@ -25,25 +25,16 @@ pub fn parse_params(
         }
 
         match next {
-            Some(Token {
-                data: TokenData::ValueIdentifier(identifier),
-                ..
-            }) => {
+            Some(token_data!(TokenData::ValueIdentifier(identifier))) => {
                 let name = identifier;
                 let type_ = parse_type(lexer)?;
 
                 params.push(FunctionParam { name, type_ });
 
                 match lexer.next() {
-                    Some(Token {
-                        data: TokenData::Comma,
-                        ..
-                    }) => {}
+                    Some(token_data!(TokenData::Comma)) => {}
 
-                    Some(Token {
-                        data: TokenData::RightParenNormal,
-                        ..
-                    }) => break,
+                    Some(token_data!(TokenData::RightParenNormal)) => break,
 
                     Some(t) => {
                         return Err(parser_error!(
@@ -78,15 +69,9 @@ pub fn parse_function_definition(
 
     // get name if it exists
     match lexer.next() {
-        Some(Token {
-            data: TokenData::LeftParenNormal,
-            ..
-        }) => {}
+        Some(token_data!(TokenData::LeftParenNormal)) => {}
 
-        Some(Token {
-            data: TokenData::ValueIdentifier(identifier),
-            ..
-        }) => {
+        Some(token_data!(TokenData::ValueIdentifier(identifier))) => {
             name = Some(identifier);
 
             let next = lexer.next();

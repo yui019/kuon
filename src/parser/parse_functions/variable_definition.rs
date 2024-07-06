@@ -4,7 +4,7 @@ use crate::{
         Lexer,
     },
     parser::{parser_error::ParserError, r#type::Type},
-    parser_error, parser_error_eof,
+    parser_error, parser_error_eof, token_data,
 };
 
 use super::{
@@ -20,10 +20,7 @@ pub fn parse_variable_definition(
     let name = lexer.next();
 
     let name = match name {
-        Some(Token {
-            data: TokenData::ValueIdentifier(identifier),
-            ..
-        }) => identifier,
+        Some(token_data!(TokenData::ValueIdentifier(identifier))) => identifier,
 
         None => return Err(parser_error_eof!("Expected variable name")),
         Some(t) => {

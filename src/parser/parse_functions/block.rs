@@ -4,7 +4,7 @@ use crate::{
         Lexer,
     },
     parser::parser_error::ParserError,
-    parser_error, parser_error_eof,
+    parser_error, parser_error_eof, token_data,
 };
 
 use super::super::{
@@ -26,10 +26,7 @@ pub fn parse_block(lexer: &mut Lexer) -> Result<Expression, ParserError> {
         expressions.push(parse_expression(lexer)?);
 
         match lexer.next() {
-            Some(Token {
-                data: TokenData::Semicolon,
-                ..
-            }) => {
+            Some(token_data!(TokenData::Semicolon)) => {
                 if token_matches(&lexer.peek(), &TokenData::RightParenCurly) {
                     lexer.next();
                     expressions.push(Expression::Null);
@@ -39,10 +36,7 @@ pub fn parse_block(lexer: &mut Lexer) -> Result<Expression, ParserError> {
                 continue;
             }
 
-            Some(Token {
-                data: TokenData::RightParenCurly,
-                ..
-            }) => break,
+            Some(token_data!(TokenData::RightParenCurly)) => break,
 
             Some(t) => {
                 return Err(parser_error!(

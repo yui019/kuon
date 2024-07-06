@@ -9,6 +9,7 @@ use util::token_matches;
 use crate::lexer::token::TokenData;
 use crate::lexer::{token::Token, Lexer};
 use crate::parser::parse_functions::block::parse_block;
+use crate::token_data;
 
 pub mod expression;
 mod parse_functions;
@@ -49,13 +50,7 @@ pub fn parse_source(lexer: &mut Lexer) -> Result<Expression, ParserError> {
             if require_semicolon {
                 let next = lexer.next();
 
-                if !matches!(
-                    next,
-                    Some(Token {
-                        data: TokenData::Semicolon,
-                        ..
-                    })
-                ) {
+                if !matches!(next, Some(token_data!(TokenData::Semicolon))) {
                     if let Some(token) = next {
                         return Err(parser_error!(
                             token.line,
@@ -82,33 +77,15 @@ fn expr_binding_power(
     min_binding_power: u8,
 ) -> Result<Expression, ParserError> {
     let mut left = match lexer.next() {
-        Some(Token {
-            data: TokenData::ValueString(v),
-            ..
-        }) => Expression::String(v),
-        Some(Token {
-            data: TokenData::ValueChar(v),
-            ..
-        }) => Expression::Char(v),
-        Some(Token {
-            data: TokenData::ValueInt(v),
-            ..
-        }) => Expression::Int(v),
-        Some(Token {
-            data: TokenData::ValueFloat(v),
-            ..
-        }) => Expression::Float(v),
-        Some(Token {
-            data: TokenData::ValueIdentifier(v),
-            ..
-        }) => Expression::Identifier(v),
+        Some(token_data!(TokenData::ValueString(v))) => Expression::String(v),
+        Some(token_data!(TokenData::ValueChar(v))) => Expression::Char(v),
+        Some(token_data!(TokenData::ValueInt(v))) => Expression::Int(v),
+        Some(token_data!(TokenData::ValueFloat(v))) => Expression::Float(v),
+        Some(token_data!(TokenData::ValueIdentifier(v))) => {
+            Expression::Identifier(v)
+        }
 
-        Some(
-            operator @ Token {
-                data: TokenData::Minus,
-                ..
-            },
-        ) => {
+        Some(operator @ token_data!(TokenData::Minus)) => {
             let (_, right_binding_power) =
                 prefix_binding_power(&operator.data).unwrap();
             let right = expr_binding_power(lexer, right_binding_power)?;
@@ -119,10 +96,7 @@ fn expr_binding_power(
             }
         }
 
-        Some(Token {
-            data: TokenData::LeftParenNormal,
-            ..
-        }) => {
+        Some(token_data!(TokenData::LeftParenNormal)) => {
             let inner_expression = parse_expression(lexer);
 
             let next = lexer.next();
@@ -133,25 +107,15 @@ fn expr_binding_power(
             inner_expression?
         }
 
-        Some(Token {
-            data: TokenData::LeftParenCurly,
-            ..
-        }) => parse_block(lexer)?,
+        Some(token_data!(TokenData::LeftParenCurly)) => parse_block(lexer)?,
 
-        Some(Token {
-            data: TokenData::If,
-            ..
-        }) => parse_if_condition(lexer)?,
+        Some(token_data!(TokenData::If)) => parse_if_condition(lexer)?,
 
-        token @ Some(Token {
-            data: TokenData::Val | TokenData::Var,
-            ..
-        }) => parse_variable_definition(lexer, token.unwrap())?,
+        token @ Some(token_data!(TokenData::Val | TokenData::Var)) => {
+            parse_variable_definition(lexer, token.unwrap())?
+        }
 
-        Some(Token {
-            data: TokenData::Fun,
-            ..
-        }) => parse_function_definition(lexer)?,
+        Some(token_data!(TokenData::Fun)) => parse_function_definition(lexer)?,
 
         None => return Err(parser_error_eof!("Expected expression")),
         Some(t) => {
