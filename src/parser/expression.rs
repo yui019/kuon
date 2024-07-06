@@ -3,6 +3,12 @@ use crate::lexer::token::TokenData;
 use super::r#type::Type;
 
 #[derive(Debug, Clone)]
+pub struct FunctionParam {
+    pub name: String,
+    pub type_: Type,
+}
+
+#[derive(Debug, Clone)]
 pub enum Expression {
     Null,
 
@@ -43,6 +49,13 @@ pub enum Expression {
         name: String,
         value: Box<Expression>,
         type_: Option<Box<Type>>,
+    },
+
+    FunctionDefinition {
+        name: Option<String>,
+        params: Vec<FunctionParam>,
+        return_type: Type,
+        body: Box<Expression>,
     },
 
     Type {

@@ -8,4 +8,9 @@ pub enum Type {
     Bool,
     Char,
     String,
+
+    Function {
+        param_types: Vec<Type>,
+        return_type: Box<Type>,
+    },
 }

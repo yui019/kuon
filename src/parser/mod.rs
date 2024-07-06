@@ -1,4 +1,5 @@
 use expression::Expression;
+use parse_functions::function_definition::parse_function_definition;
 use parse_functions::if_condition::parse_if_condition;
 use parse_functions::variable_definition::parse_variable_definition;
 use parser_error::ParserError;
@@ -122,6 +123,11 @@ fn expr_binding_power(
             data: TokenData::Val | TokenData::Var,
             ..
         }) => parse_variable_definition(lexer, token.unwrap())?,
+
+        Some(Token {
+            data: TokenData::Fun,
+            ..
+        }) => parse_function_definition(lexer)?,
 
         None => return Err(parser_error_eof!("Expected expression")),
         Some(t) => {

@@ -176,6 +176,22 @@ pub fn validate_and_get_type(
             return Ok(Type::Null);
         }
 
+        Expression::FunctionDefinition {
+            params,
+            return_type,
+            ..
+        } => {
+            let mut param_types: Vec<Type> = vec![];
+            for param in params {
+                param_types.push(param.type_.clone());
+            }
+
+            return Ok(Type::Function {
+                param_types,
+                return_type: Box::new(return_type.clone()),
+            });
+        }
+
         Expression::Type { .. } => {
             return Err(format!("Cannot use a type as an expression"))
         }
