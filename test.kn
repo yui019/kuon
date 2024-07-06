@@ -8,12 +8,10 @@ var a = 2 + {
     }
 };
 
-val b int = a + 3;
 
 fun add(a int, b float) int {
     a + b
-};
-
-val f = fun (a int, b float) int {
-    a + b
 }
+
+val b int = a + 3;
+val b int = a + 3;

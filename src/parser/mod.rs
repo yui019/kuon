@@ -18,31 +18,54 @@ mod util;
 pub mod parser_error;
 
 pub fn parse_source(lexer: &mut Lexer) -> Result<Expression, ParserError> {
-    let mut expressions = vec![parse_expression(lexer)?];
+    let mut expressions = vec![];
 
     loop {
-        match lexer.next() {
-            Some(Token {
-                data: TokenData::Semicolon,
-                ..
-            }) => {
-                if lexer.peek().is_some() {
-                    expressions.push(parse_expression(lexer)?);
-                } else {
-                    expressions.push(Expression::Null);
-                    break;
+        let token = lexer.peek();
+        if token.is_some() {
+            let expr = parse_expression(lexer)?;
+            expressions.push(expr.clone());
+
+            let mut require_semicolon = true;
+
+            match expr {
+                // semicolons aren't required after top level function
+                // definitions
+                Expression::FunctionDefinition { name, .. } => {
+                    if name.is_none() {
+                        return Err(parser_error!(
+                            token.unwrap().line,
+                            "Top level function definitions require a name"
+                        ));
+                    }
+
+                    require_semicolon = false;
+                }
+
+                _ => {}
+            }
+
+            if require_semicolon {
+                let next = lexer.next();
+
+                if !matches!(
+                    next,
+                    Some(Token {
+                        data: TokenData::Semicolon,
+                        ..
+                    })
+                ) {
+                    if let Some(token) = next {
+                        return Err(parser_error!(
+                            token.line,
+                            "Expected semicolon, got {:?}",
+                            token.data
+                        ));
+                    }
                 }
             }
-
-            Some(token) => {
-                return Err(parser_error!(
-                    token.line,
-                    "Expected semicolon, got {:?}",
-                    token.data
-                ))
-            }
-
-            None => break,
+        } else {
+            break;
         }
     }
 
