@@ -5,7 +5,7 @@ use crate::{
     },
     parser::{
         expression::FunctionParam, parse_expression, parser_error::ParserError,
-        r#type::Type, util::token_matches,
+        util::token_matches,
     },
     parser_error, parser_error_eof,
 };
