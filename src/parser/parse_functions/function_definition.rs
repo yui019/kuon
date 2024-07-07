@@ -64,11 +64,13 @@ pub fn parse_params(
 /// Called after Token::Fun
 pub fn parse_function_definition(
     lexer: &mut Lexer,
+    top_level: bool,
 ) -> Result<Expression, ParserError> {
     let mut name: Option<String> = None;
 
     // get name if it exists
-    match lexer.next() {
+    let first_token = lexer.next();
+    match first_token.clone() {
         Some(token_data!(TokenData::LeftParenNormal)) => {}
 
         Some(token_data!(TokenData::ValueIdentifier(identifier))) => {
@@ -91,6 +93,13 @@ pub fn parse_function_definition(
             ))
         }
         None => return Err(parser_error_eof!("Expected function name or (")),
+    }
+
+    if !top_level && name.is_some() {
+        return Err(parser_error!(
+            first_token.unwrap().line,
+            "Only top level functions can have a name",
+        ));
     }
 
     let params = parse_params(lexer)?;

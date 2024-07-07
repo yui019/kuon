@@ -192,6 +192,8 @@ pub fn validate_and_get_type(
                 param_types.push(param.type_.clone());
             }
 
+            // add function to the environment if it has a name (only top level
+            // functions can have names, this is ensured by the parser)
             if name.is_some() {
                 env.add_function(
                     name.clone().unwrap(),

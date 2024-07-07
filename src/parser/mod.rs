@@ -25,7 +25,7 @@ pub fn parse_source(lexer: &mut Lexer) -> Result<Expression, ParserError> {
     loop {
         let token = lexer.peek();
         if token.is_some() {
-            let expr = parse_expression(lexer)?;
+            let expr = parse_expression_top_level(lexer)?;
             expressions.push(expr.clone());
 
             let mut require_semicolon = true;
@@ -68,13 +68,20 @@ pub fn parse_source(lexer: &mut Lexer) -> Result<Expression, ParserError> {
     Ok(Expression::Block { expressions })
 }
 
+fn parse_expression_top_level(
+    lexer: &mut Lexer,
+) -> Result<Expression, ParserError> {
+    expr_binding_power(lexer, 0, true)
+}
+
 fn parse_expression(lexer: &mut Lexer) -> Result<Expression, ParserError> {
-    expr_binding_power(lexer, 0)
+    expr_binding_power(lexer, 0, false)
 }
 
 fn expr_binding_power(
     lexer: &mut Lexer,
     min_binding_power: u8,
+    top_level: bool,
 ) -> Result<Expression, ParserError> {
     let mut left = match lexer.next() {
         Some(token_data!(TokenData::ValueString(v))) => Expression::String(v),
@@ -88,7 +95,7 @@ fn expr_binding_power(
         Some(operator @ token_data!(TokenData::Minus)) => {
             let (_, right_binding_power) =
                 prefix_binding_power(&operator.data).unwrap();
-            let right = expr_binding_power(lexer, right_binding_power)?;
+            let right = expr_binding_power(lexer, right_binding_power, false)?;
 
             Expression::Prefix {
                 operator: operator.data,
@@ -115,7 +122,9 @@ fn expr_binding_power(
             parse_variable_definition(lexer, token.unwrap())?
         }
 
-        Some(token_data!(TokenData::Fun)) => parse_function_definition(lexer)?,
+        Some(token_data!(TokenData::Fun)) => {
+            parse_function_definition(lexer, top_level)?
+        }
 
         None => return Err(parser_error_eof!("Expected expression")),
         Some(t) => {
@@ -165,7 +174,8 @@ fn expr_binding_power(
                 }
 
                 lexer.next();
-                let right = expr_binding_power(lexer, right_binding_power)?;
+                let right =
+                    expr_binding_power(lexer, right_binding_power, false)?;
 
                 left = Expression::Infix {
                     left: Box::new(left),
