@@ -13,7 +13,7 @@ pub fn compile_prefix(
 ) -> Result<(), String> {
     match operator {
         TokenData::Minus => {
-            compile_value(chunk, value);
+            compile_value(chunk, value)?;
             chunk.add_operation(&Operation::Negate);
         }
 
