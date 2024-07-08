@@ -14,26 +14,26 @@ pub fn compile_infix(
 ) -> Result<(), String> {
     match operator {
         TokenData::Plus => {
-            compile_value(chunk, left);
-            compile_value(chunk, right);
+            compile_value(chunk, left)?;
+            compile_value(chunk, right)?;
             chunk.add_operation(&Operation::Add);
         }
 
         TokenData::Minus => {
-            compile_value(chunk, left);
-            compile_value(chunk, right);
+            compile_value(chunk, left)?;
+            compile_value(chunk, right)?;
             chunk.add_operation(&Operation::Substract);
         }
 
         TokenData::Star => {
-            compile_value(chunk, left);
-            compile_value(chunk, right);
+            compile_value(chunk, left)?;
+            compile_value(chunk, right)?;
             chunk.add_operation(&Operation::Multiply);
         }
 
         TokenData::Slash => {
-            compile_value(chunk, left);
-            compile_value(chunk, right);
+            compile_value(chunk, left)?;
+            compile_value(chunk, right)?;
             chunk.add_operation(&Operation::Divide);
         }
 
