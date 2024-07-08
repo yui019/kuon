@@ -17,5 +17,8 @@ pub enum Operation {
     GreaterThan,
     GreaterThanOrEqual,
 
+    Jump(usize),
+    JumpIfFalse(usize),
+
     Halt,
 }

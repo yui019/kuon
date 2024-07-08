@@ -1,7 +1,5 @@
 use crate::{
-    compiler::{
-        chunk::Chunk, compile_expression, operation::Operation, value::Value,
-    },
+    compiler::{chunk::Chunk, operation::Operation, value::Value},
     parser::expression::Expression,
 };
 
@@ -26,9 +24,7 @@ pub fn compile_value(
 
         Expression::Identifier(_) => todo!(),
 
-        // uhh this shouldn't really ever get called if I don't mess up my code
-        // later down the line, but I'm leaving it just in case
-        _ => compile_expression(chunk, value)?,
+        _ => unreachable!(),
     }
 
     Ok(())

@@ -1,10 +1,8 @@
 use crate::{
-    compiler::{chunk::Chunk, operation::Operation},
+    compiler::{chunk::Chunk, compile_expression, operation::Operation},
     lexer::token::TokenData,
     parser::expression::Expression,
 };
-
-use super::value::compile_value;
 
 pub fn compile_prefix(
     chunk: &mut Chunk,
@@ -13,7 +11,7 @@ pub fn compile_prefix(
 ) -> Result<(), String> {
     match operator {
         TokenData::Minus => {
-            compile_value(chunk, value)?;
+            compile_expression(chunk, value)?;
             chunk.add_operation(&Operation::Negate);
         }
 

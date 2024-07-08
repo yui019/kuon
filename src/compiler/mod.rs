@@ -1,5 +1,8 @@
 use chunk::Chunk;
-use compile_functions::{infix::compile_infix, prefix::compile_prefix};
+use compile_functions::{
+    if_condition::compile_if_condition, infix::compile_infix,
+    prefix::compile_prefix, value::compile_value,
+};
 
 use crate::parser::expression::Expression;
 
@@ -30,13 +33,12 @@ fn compile_expression(
     expression: &Expression,
 ) -> Result<(), String> {
     match expression {
-        Expression::Null => {}
-        Expression::String(_) => {}
-        Expression::Char(_) => {}
-        Expression::Int(_) => {}
-        Expression::Float(_) => {}
-        Expression::Identifier(_) => {}
-        Expression::Type { .. } => {}
+        value @ (Expression::Null
+        | Expression::String(_)
+        | Expression::Char(_)
+        | Expression::Int(_)
+        | Expression::Float(_)
+        | Expression::Identifier(_)) => compile_value(chunk, value)?,
 
         Expression::Prefix { operator, value } => {
             compile_prefix(chunk, operator, &value)?
@@ -56,13 +58,19 @@ fn compile_expression(
             }
         }
 
-        Expression::IfCondition { .. } => todo!(),
+        Expression::IfCondition {
+            condition,
+            true_branch,
+            else_branch,
+        } => compile_if_condition(chunk, condition, true_branch, else_branch)?,
 
         Expression::VariableDefinition { .. } => todo!(),
 
         Expression::FunctionDefinition { .. } => todo!(),
 
         Expression::FunctionCall { .. } => todo!(),
+
+        Expression::Type { .. } => unreachable!(),
     }
 
     Ok(())

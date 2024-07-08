@@ -33,6 +33,16 @@ fn main() {
     println!("\n========================================\n");
 
     let ast = parse_result.unwrap();
-    let bytecode_chunk = compiler::compile_source(&ast);
-    println!("{:#?}", bytecode_chunk);
+    let compile_result = compiler::compile_source(&ast);
+    match compile_result {
+        Ok(chunk) => {
+            for (index, operation) in chunk.code.iter().enumerate() {
+                println!("{:5} | {:?}", index, operation)
+            }
+        }
+
+        Err(e) => {
+            cprintln!("<red>[Compiler error]</red> {:?}", e);
+        }
+    }
 }
