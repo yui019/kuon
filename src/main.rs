@@ -1,7 +1,7 @@
 use std::fs;
 
 use color_print::cprintln;
-use kuon::{analyzer, lexer::Lexer, parser};
+use kuon::{analyzer, compiler, lexer::Lexer, parser};
 
 fn main() {
     let source = fs::read_to_string("test.kn").unwrap();
@@ -29,4 +29,10 @@ fn main() {
             cprintln!("<red>[Parser error]</red> {:?}", e);
         }
     }
+
+    println!("\n========================================\n");
+
+    let ast = parse_result.unwrap();
+    let bytecode_chunk = compiler::compile_source(&ast);
+    println!("{:#?}", bytecode_chunk);
 }
