@@ -11,5 +11,11 @@ pub enum Operation {
     Divide,
     Negate,
 
+    Equal,
+    LessThan,
+    LessThanOrEqual,
+    GreaterThan,
+    GreaterThanOrEqual,
+
     Halt,
 }

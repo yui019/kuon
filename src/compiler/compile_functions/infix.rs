@@ -37,11 +37,35 @@ pub fn compile_infix(
             chunk.add_operation(&Operation::Divide);
         }
 
-        TokenData::EqualsEquals
-        | TokenData::LessThan
-        | TokenData::LessThanOrEqual
-        | TokenData::GreaterThan
-        | TokenData::GreaterThanOrEqual => todo!(),
+        TokenData::EqualsEquals => {
+            compile_value(chunk, left)?;
+            compile_value(chunk, right)?;
+            chunk.add_operation(&Operation::Equal);
+        }
+
+        TokenData::LessThan => {
+            compile_value(chunk, left)?;
+            compile_value(chunk, right)?;
+            chunk.add_operation(&Operation::LessThan);
+        }
+
+        TokenData::LessThanOrEqual => {
+            compile_value(chunk, left)?;
+            compile_value(chunk, right)?;
+            chunk.add_operation(&Operation::LessThanOrEqual);
+        }
+
+        TokenData::GreaterThan => {
+            compile_value(chunk, left)?;
+            compile_value(chunk, right)?;
+            chunk.add_operation(&Operation::GreaterThan);
+        }
+
+        TokenData::GreaterThanOrEqual => {
+            compile_value(chunk, left)?;
+            compile_value(chunk, right)?;
+            chunk.add_operation(&Operation::GreaterThanOrEqual);
+        }
 
         _ => unreachable!(),
     }
