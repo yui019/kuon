@@ -23,10 +23,58 @@ pub fn parse_block(lexer: &mut Lexer) -> Result<Expression, ParserError> {
     }
 
     loop {
-        expressions.push(parse_expression(lexer)?);
+        let first_token = lexer.peek();
+        if first_token.is_none() {
+            break;
+        }
 
-        match lexer.next() {
+        let expression = parse_expression(lexer)?;
+
+        if matches!(expression, Expression::FunctionDefinition { .. }) {
+            return Err(parser_error!(
+                first_token.unwrap().line,
+                "Standalone function definitions aren't allowed below top-level"
+            ));
+        }
+
+        expressions.push(expression.clone());
+
+        // determine if the expression requires a semicolon after it
+
+        let mut require_semicolon = true;
+
+        match expression {
+            // semicolons aren't required after if conditions
+            Expression::IfCondition { .. } => {
+                require_semicolon = false;
+            }
+
+            _ => {}
+        }
+
+        if require_semicolon {
+            let next = lexer.peek();
+
+            if !matches!(
+                next,
+                Some(token_data!(
+                    TokenData::Semicolon | TokenData::RightParenCurly
+                ))
+            ) {
+                if let Some(token) = next {
+                    return Err(parser_error!(
+                        token.line,
+                        "Expected semicolon, got {:?}",
+                        token.data
+                    ));
+                }
+            }
+        }
+
+        match lexer.peek() {
             Some(token_data!(TokenData::Semicolon)) => {
+                lexer.next();
+
                 if token_matches(&lexer.peek(), &TokenData::RightParenCurly) {
                     lexer.next();
                     expressions.push(Expression::Null);
@@ -36,15 +84,12 @@ pub fn parse_block(lexer: &mut Lexer) -> Result<Expression, ParserError> {
                 continue;
             }
 
-            Some(token_data!(TokenData::RightParenCurly)) => break,
-
-            Some(t) => {
-                return Err(parser_error!(
-                    t.line,
-                    "Expected semicolon inside block, got {:?}",
-                    t.data
-                ))
+            Some(token_data!(TokenData::RightParenCurly)) => {
+                lexer.next();
+                break;
             }
+
+            Some(_) => continue,
             None => return Err(parser_error_eof!("Expected }}")),
         }
     }

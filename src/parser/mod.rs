@@ -28,11 +28,11 @@ pub fn parse_source(lexer: &mut Lexer) -> Result<Expression, ParserError> {
             let expr = parse_expression_top_level(lexer)?;
             expressions.push(expr.clone());
 
+            // determine if the expression requires a semicolon after it
+
             let mut require_semicolon = true;
 
             match expr {
-                // semicolons aren't required after top level function
-                // definitions
                 Expression::FunctionDefinition { name, .. } => {
                     if name.is_none() {
                         return Err(parser_error!(
@@ -41,6 +41,10 @@ pub fn parse_source(lexer: &mut Lexer) -> Result<Expression, ParserError> {
                         ));
                     }
 
+                    require_semicolon = false;
+                }
+
+                Expression::IfCondition { .. } => {
                     require_semicolon = false;
                 }
 
