@@ -1,11 +1,7 @@
+val a = 1;
+
 val b = {
-    val a = 1;
-    
-    val f = fun () int { a + 1 };
+    val a = 2;
 
-    f()
+    a + 1
 };
-
-fun f1() int {
-    b + 1
-}

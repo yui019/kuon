@@ -11,6 +11,10 @@ pub fn validate_variable_definition(
     value: &Expression,
     name: &String,
 ) -> Result<Type, String> {
+    if env.get_variable(name).is_some() {
+        return Err(format!("Variable with name {} already exists", name));
+    }
+
     if let Some(type_) = type_ {
         if **type_ != validate_and_get_type(&value, env)? {
             return Err(format!(
