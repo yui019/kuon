@@ -4,6 +4,7 @@ use crate::{
         expression::{Expression, FunctionParam},
         r#type::Type,
     },
+    parser_error,
 };
 
 use super::validate_and_get_type;
@@ -35,7 +36,14 @@ pub fn validate_function_definition(
     for param in params {
         body_env.add_variable(param.name.clone(), param.type_.clone());
     }
-    validate_and_get_type(&body, &mut body_env)?;
+    let body_type = validate_and_get_type(&body, &mut body_env)?;
+
+    if body_type != *return_type {
+        return Err(format!(
+            "Function should return {:?}, but it returns {:?}",
+            return_type, body_type
+        ));
+    }
 
     return Ok(Type::Function {
         param_types,

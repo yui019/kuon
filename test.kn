@@ -1,8 +1,11 @@
-if 1 == 2 {
-    1 + 3;
-    1
-} else {
-    2
-}
+val b = {
+    val a = 1;
+    
+    val f = fun () int { a + 1 };
 
-1 + 3
+    f()
+};
+
+fun f1() int {
+    b + 1
+}
