@@ -4,7 +4,6 @@ use crate::{
         expression::{Expression, FunctionParam},
         r#type::Type,
     },
-    parser_error,
 };
 
 use super::validate_and_get_type;
