@@ -7,6 +7,12 @@ pub enum Operation {
     // pop 1 value from the stack
     Pop,
 
+    // pop 1 value from the stack and store it in a variable with the given
+    // name
+    Store(String),
+    // load value of the varable with the given name and push it to the stack
+    Load(String),
+
     // pop 2 values from the stack, add them and push that to the stack
     Add,
     // pop 2 values from the stack, substract them and push that to the stack

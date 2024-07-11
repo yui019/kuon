@@ -2,6 +2,7 @@ use chunk::Chunk;
 use compile_functions::{
     if_condition::compile_if_condition, infix::compile_infix,
     prefix::compile_prefix, value::compile_value,
+    variable_definition::compile_variable_definition,
 };
 
 use crate::parser::expression::Expression;
@@ -64,7 +65,9 @@ fn compile_expression(
             else_branch,
         } => compile_if_condition(chunk, condition, true_branch, else_branch)?,
 
-        Expression::VariableDefinition { .. } => todo!(),
+        Expression::VariableDefinition { name, value, .. } => {
+            compile_variable_definition(chunk, name, value)?
+        }
 
         Expression::FunctionDefinition { .. } => todo!(),
 

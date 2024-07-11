@@ -22,7 +22,9 @@ pub fn compile_value(
             chunk.add_operation(&Operation::Push(Value::Float(v.clone())))
         }
 
-        Expression::Identifier(_) => todo!(),
+        Expression::Identifier(v) => {
+            chunk.add_operation(&Operation::Load(v.clone()));
+        }
 
         _ => unreachable!(),
     }
