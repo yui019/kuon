@@ -51,6 +51,11 @@ pub enum Expression {
         type_: Option<Box<Type>>,
     },
 
+    VariableAssignment {
+        name: String,
+        value: Box<Expression>,
+    },
+
     FunctionDefinition {
         name: Option<String>,
         params: Vec<FunctionParam>,

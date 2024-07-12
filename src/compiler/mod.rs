@@ -2,8 +2,10 @@ use chunk::Chunk;
 use compile_functions::{
     if_condition::compile_if_condition, infix::compile_infix,
     prefix::compile_prefix, value::compile_value,
+    variable_assignment::compile_variable_assignment,
     variable_definition::compile_variable_definition,
 };
+use operation::Operation;
 
 use crate::parser::expression::Expression;
 
@@ -25,6 +27,8 @@ pub fn compile_source(ast: &Expression) -> Result<Chunk, String> {
             "Source code is expected to be a block expression"
         ));
     }
+
+    chunk.add_operation(&Operation::Halt);
 
     Ok(chunk)
 }
@@ -67,6 +71,10 @@ fn compile_expression(
 
         Expression::VariableDefinition { name, value, .. } => {
             compile_variable_definition(chunk, name, value)?
+        }
+
+        Expression::VariableAssignment { name, value } => {
+            compile_variable_assignment(chunk, name, value)?
         }
 
         Expression::FunctionDefinition { .. } => todo!(),

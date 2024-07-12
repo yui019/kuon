@@ -1,7 +1,7 @@
 val a = 1;
 
-val b = {
-    val c = 2;
-
-    c + 1
-};
+if a == 2 {
+    a = 3;
+} else {
+    a = 4;
+}

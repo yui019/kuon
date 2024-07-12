@@ -181,10 +181,35 @@ fn expr_binding_power(
                 let right =
                     expr_binding_power(lexer, right_binding_power, false)?;
 
-                left = Expression::Infix {
-                    left: Box::new(left),
-                    operator: operator.data,
-                    right: Box::new(right),
+                left = match operator.data {
+                    // variable assignment
+                    TokenData::Equals => {
+                        let name = match left {
+                            Expression::Identifier(identifier) => identifier,
+
+                            _ => {
+                                return Err(parser_error!(
+                                    // TODO: this should be the line of the
+                                    // `left` expression, but expressions don't
+                                    // have store lines yet (they should!!)
+                                    operator.line,
+                                    "Variable name should be an identifier"
+                                ));
+                            }
+                        };
+
+                        Expression::VariableAssignment {
+                            name,
+                            value: Box::new(right),
+                        }
+                    }
+
+                    // else
+                    _ => Expression::Infix {
+                        left: Box::new(left),
+                        operator: operator.data,
+                        right: Box::new(right),
+                    },
                 };
 
                 continue;
@@ -201,7 +226,7 @@ fn expr_binding_power(
 
 fn prefix_binding_power(op: &TokenData) -> Option<((), u8)> {
     match op {
-        TokenData::Minus => Some(((), 30)),
+        TokenData::Minus => Some(((), 40)),
 
         _ => None,
     }
@@ -209,14 +234,16 @@ fn prefix_binding_power(op: &TokenData) -> Option<((), u8)> {
 
 fn infix_binding_power(op: &TokenData) -> Option<(u8, u8)> {
     match op {
-        TokenData::Plus | TokenData::Minus => Some((10, 11)),
-        TokenData::Star | TokenData::Slash => Some((20, 21)),
+        TokenData::Plus | TokenData::Minus => Some((20, 21)),
+        TokenData::Star | TokenData::Slash => Some((30, 31)),
 
         TokenData::EqualsEquals
         | TokenData::LessThan
         | TokenData::LessThanOrEqual
         | TokenData::GreaterThan
-        | TokenData::GreaterThanOrEqual => Some((0, 1)),
+        | TokenData::GreaterThanOrEqual => Some((10, 11)),
+
+        TokenData::Equals => Some((0, 1)),
 
         _ => None,
     }
@@ -224,7 +251,7 @@ fn infix_binding_power(op: &TokenData) -> Option<(u8, u8)> {
 
 fn postfix_binding_power(op: &TokenData) -> Option<(u8, ())> {
     match op {
-        TokenData::LeftParenNormal => Some((40, ())),
+        TokenData::LeftParenNormal => Some((50, ())),
         _ => None,
     }
 }

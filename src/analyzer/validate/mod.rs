@@ -5,6 +5,7 @@ use identifier::validate_identifier;
 use if_condition::validate_if_condition;
 use infix::validate_infix;
 use prefix::validate_prefix;
+use variable_assignment::validate_variable_assignment;
 use variable_definition::validate_variable_definition;
 
 use crate::parser::{expression::Expression, r#type::Type};
@@ -18,6 +19,7 @@ mod identifier;
 mod if_condition;
 mod infix;
 mod prefix;
+mod variable_assignment;
 mod variable_definition;
 
 pub fn validate_and_get_type(
@@ -60,8 +62,15 @@ pub fn validate_and_get_type(
         } => validate_if_condition(env, condition, true_branch, else_branch),
 
         Expression::VariableDefinition {
-            type_, value, name, ..
-        } => validate_variable_definition(env, type_, value, name),
+            type_,
+            value,
+            name,
+            constant,
+        } => validate_variable_definition(env, type_, value, name, *constant),
+
+        Expression::VariableAssignment { name, value } => {
+            validate_variable_assignment(env, name, value)
+        }
 
         Expression::FunctionDefinition {
             name,

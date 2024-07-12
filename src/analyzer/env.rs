@@ -4,6 +4,7 @@ use crate::parser::r#type::Type;
 pub struct EnvironmentVariable {
     pub name: String,
     pub type_: Type,
+    pub constant: bool,
 }
 
 #[derive(Debug, Clone)]
@@ -67,8 +68,12 @@ impl<'a> Environment<'a> {
         return None;
     }
 
-    pub fn add_variable(&mut self, name: String, type_: Type) {
-        self.variables.push(EnvironmentVariable { name, type_ })
+    pub fn add_variable(&mut self, name: String, type_: Type, constant: bool) {
+        self.variables.push(EnvironmentVariable {
+            name,
+            type_,
+            constant,
+        })
     }
 
     pub fn add_function(

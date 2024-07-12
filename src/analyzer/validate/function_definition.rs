@@ -32,8 +32,16 @@ pub fn validate_function_definition(
 
     // validate inner body of function
     let mut body_env = Environment::from_parent(&env);
+
+    // add function params to its environment before validating its body
     for param in params {
-        body_env.add_variable(param.name.clone(), param.type_.clone());
+        let constant = true;
+
+        body_env.add_variable(
+            param.name.clone(),
+            param.type_.clone(),
+            constant,
+        );
     }
     let body_type = validate_and_get_type(&body, &mut body_env)?;
 
