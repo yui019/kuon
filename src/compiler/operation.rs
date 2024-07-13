@@ -46,6 +46,10 @@ pub enum Operation {
     // the value is true
     JumpIfFalse(usize),
 
+    // Pop 1 Value::Function and N values for each function parameter, then
+    // call the function
+    Call,
+
     // halt execution
     Halt,
 }

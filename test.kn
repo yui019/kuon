@@ -1,7 +1,8 @@
-val a = 1;
-
-if a == 2 {
-    a = 3;
-} else {
-    a = 4;
+fun add(a int, b int) int {
+	a + b
 }
+
+val f = fun (n int) int { n + 1 };
+
+f(2);
+add(5, 6);

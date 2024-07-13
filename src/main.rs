@@ -36,6 +36,18 @@ fn main() {
     let compile_result = compiler::compile_source(&ast);
     match compile_result {
         Ok(chunk) => {
+            for (index, function) in chunk.functions.iter().enumerate() {
+                println!("FUNCTION {}:", index);
+
+                for (index, operation) in function.chunk.code.iter().enumerate()
+                {
+                    println!("{:5} | {:?}", index, operation)
+                }
+
+                println!("");
+            }
+
+            println!("CODE:");
             for (index, operation) in chunk.code.iter().enumerate() {
                 println!("{:5} | {:?}", index, operation)
             }
