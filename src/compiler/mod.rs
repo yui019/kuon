@@ -82,6 +82,7 @@ fn compile_expression(
 
         Expression::FunctionCall { .. } => todo!(),
 
+        // this should be unreachable unless I seriously mess something up
         Expression::Type { .. } => unreachable!(),
     }
 
