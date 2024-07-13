@@ -55,7 +55,8 @@ fn compile_expression(
             right,
         } => compile_infix(chunk, left, operator, right)?,
 
-        Expression::Postfix { .. } => todo!(),
+        // no Postfix expressions yet
+        Expression::Postfix { .. } => {}
 
         Expression::Block { expressions } => {
             for expression in expressions {
