@@ -10,21 +10,32 @@ use crate::compiler::{chunk::Chunk, operation::Operation, value::Value};
 mod util;
 
 pub fn execute(chunk: &Chunk) -> Value {
-    execute_chunk(chunk, &vec![])
+    execute_chunk(chunk, None, &vec![])
 }
 
-fn execute_chunk(chunk: &Chunk, default_stack: &Vec<Value>) -> Value {
+/// If function is Some, the function with that index in the chunk will be
+/// executed instead of the chunk
+fn execute_chunk(
+    chunk: &Chunk,
+    function: Option<usize>,
+    default_stack: &Vec<Value>,
+) -> Value {
     let mut stack: Vec<Value> = vec![];
     stack.append(&mut default_stack.clone());
     let mut variables: HashMap<String, Value> = HashMap::new();
 
+    let code = match function {
+        Some(index) => &chunk.functions[index].chunk.code,
+        None => &chunk.code,
+    };
+
     let mut i = 0;
     loop {
-        if i == chunk.code.len() {
+        if i == code.len() {
             break;
         }
 
-        let operation = &chunk.code[i];
+        let operation = &code[i];
 
         match operation.clone() {
             Operation::Push(v) => {
@@ -117,7 +128,7 @@ fn execute_chunk(chunk: &Chunk, default_stack: &Vec<Value>) -> Value {
                 }
 
                 let return_value =
-                    execute_chunk(&function.chunk, &default_stack);
+                    execute_chunk(chunk, Some(function_index), &default_stack);
 
                 stack.push(return_value);
             }

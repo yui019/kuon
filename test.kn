@@ -1,9 +1,9 @@
-fun add(a int, b int) int {
-	a + b
+fun factorial(n int) int {
+	if n == 1 {
+		1
+	} else {
+		n * factorial(n - 1)
+	}
 }
 
-if add(1, 2) > 5 {
-	"abc"
-} else {
-	"def"
-}
+factorial(5)
