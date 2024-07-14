@@ -23,11 +23,16 @@ pub fn validate_function_definition(
     // add function to the environment if it has a name (only top level
     // functions can have names, this is ensured by the parser)
     if name.is_some() {
-        env.add_function(
-            name.clone().unwrap(),
-            param_types.clone(),
-            return_type.clone(),
-        );
+        let name = name.clone().unwrap();
+
+        if env.get_function(&name).is_some() {
+            return Err(format!(
+                "A function with the name {} already exists",
+                name
+            ));
+        }
+
+        env.add_function(name, param_types.clone(), return_type.clone());
     }
 
     // validate inner body of function
