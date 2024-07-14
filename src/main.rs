@@ -28,6 +28,7 @@ fn main() {
 
         Err(e) => {
             cprintln!("<red>[Parser error]</red> {:?}", e);
+            return;
         }
     }
 
@@ -60,6 +61,7 @@ fn main() {
 
         Err(e) => {
             cprintln!("<red>[Compiler error]</red> {:?}", e);
+            return;
         }
     }
 }
