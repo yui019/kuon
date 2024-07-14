@@ -92,6 +92,8 @@ fn expr_binding_power(
         Some(token_data!(TokenData::ValueChar(v))) => Expression::Char(v),
         Some(token_data!(TokenData::ValueInt(v))) => Expression::Int(v),
         Some(token_data!(TokenData::ValueFloat(v))) => Expression::Float(v),
+        Some(token_data!(TokenData::True)) => Expression::Bool(true),
+        Some(token_data!(TokenData::False)) => Expression::Bool(false),
         Some(token_data!(TokenData::ValueIdentifier(v))) => {
             Expression::Identifier(v)
         }

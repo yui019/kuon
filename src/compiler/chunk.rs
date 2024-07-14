@@ -5,6 +5,7 @@ use super::operation::Operation;
 #[derive(Debug, Clone)]
 pub struct ChunkFunction {
     pub chunk: Chunk,
+    pub parameter_count: u32,
 }
 
 #[derive(Debug, Clone)]

@@ -463,6 +463,15 @@ impl<'a> Iterator for Lexer<'a> {
                     });
                 }
 
+                if next == "alse" {
+                    self.skip_chars(4);
+
+                    return Some(Token {
+                        data: TokenData::False,
+                        line: self.current_line,
+                    });
+                }
+
                 if next == "un" {
                     self.skip_chars(2);
 
@@ -613,6 +622,15 @@ impl<'a> Iterator for Lexer<'a> {
 
                     return Some(Token {
                         data: TokenData::ThisNoncapital,
+                        line: self.current_line,
+                    });
+                }
+
+                if next == "rue" {
+                    self.skip_chars(3);
+
+                    return Some(Token {
+                        data: TokenData::True,
                         line: self.current_line,
                     });
                 }

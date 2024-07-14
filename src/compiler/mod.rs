@@ -48,6 +48,7 @@ fn compile_expression(
         | Expression::Char(_)
         | Expression::Int(_)
         | Expression::Float(_)
+        | Expression::Bool(_)
         | Expression::Identifier(_)
         // function definitions without names are closures, so they are handled like all values
         | Expression::FunctionDefinition { name: None, .. }) => {

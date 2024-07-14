@@ -24,6 +24,9 @@ pub fn compile_value(
         Expression::Float(v) => {
             chunk.add_operation(&Operation::Push(Value::Float(v.clone())))
         }
+        Expression::Bool(v) => {
+            chunk.add_operation(&Operation::Push(Value::Bool(v.clone())))
+        }
 
         Expression::Identifier(v) => {
             if is_function {

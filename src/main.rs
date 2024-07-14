@@ -1,7 +1,7 @@
 use std::fs;
 
 use color_print::cprintln;
-use kuon::{analyzer, compiler, lexer::Lexer, parser};
+use kuon::{analyzer, compiler, lexer::Lexer, parser, vm::execute};
 
 fn main() {
     let source = fs::read_to_string("test.kn").unwrap();
@@ -51,6 +51,10 @@ fn main() {
             for (index, operation) in chunk.code.iter().enumerate() {
                 println!("{:5} | {:?}", index, operation)
             }
+
+            println!("\n========================================\n");
+
+            println!("RESULT: {:?}", execute(&chunk));
         }
 
         Err(e) => {

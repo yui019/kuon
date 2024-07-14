@@ -52,6 +52,9 @@ pub enum TokenData {
 
     As, // as
 
+    True,  // true
+    False, // false
+
     Struct, // struct
     Enum,   // enum
 

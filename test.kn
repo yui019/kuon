@@ -2,7 +2,8 @@ fun add(a int, b int) int {
 	a + b
 }
 
-val f = fun (n int) int { n + 1 };
-
-f(2);
-add(5, 6);
+if add(1, 2) > 5 {
+	"abc"
+} else {
+	"def"
+}

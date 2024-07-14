@@ -37,6 +37,8 @@ pub fn validate_and_get_type(
 
         Expression::Float(_) => return Ok(Type::Float),
 
+        Expression::Bool(_) => return Ok(Type::Bool),
+
         Expression::Identifier(identifier) => {
             validate_identifier(env, identifier)
         }

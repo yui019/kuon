@@ -24,9 +24,11 @@ pub fn compile_function_definition(
 
     // compile function body
     compile_expression(&mut function_chunk, body, is_function)?;
+    function_chunk.add_operation(&Operation::Halt);
 
     let function = ChunkFunction {
         chunk: function_chunk,
+        parameter_count: params.len() as u32,
     };
 
     chunk.functions.push(function);
