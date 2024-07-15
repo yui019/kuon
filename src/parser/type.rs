@@ -3,7 +3,6 @@ pub enum Type {
     Any,
     Null,
     Int,
-    Uint,
     Float,
     Bool,
     Char,

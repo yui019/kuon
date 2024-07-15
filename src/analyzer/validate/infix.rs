@@ -21,15 +21,24 @@ pub fn validate_infix(
         let right_type = validate_and_get_type(right, env)?;
 
         match (left_type, right_type) {
-            (Type::Uint, Type::Uint) if *operator != TokenData::Minus => {
-                return Ok(Type::Uint);
+            (Type::Int, Type::Int) => {
+                return if *operator != TokenData::Slash {
+                    Ok(Type::Float)
+                } else {
+                    Ok(Type::Int)
+                };
             }
 
-            (
-                Type::Int | Type::Uint | Type::Float,
-                Type::Int | Type::Uint | Type::Float,
-            ) => {
-                return Ok(Type::Int);
+            (Type::Int, Type::Float) => {
+                return Ok(Type::Float);
+            }
+
+            (Type::Float, Type::Float) => {
+                return Ok(Type::Float);
+            }
+
+            (Type::Float, Type::Int) => {
+                return Ok(Type::Float);
             }
 
             _ => {
@@ -48,10 +57,7 @@ pub fn validate_infix(
         let right_type = validate_and_get_type(right, env)?;
 
         match (left_type, right_type) {
-            (
-                Type::Int | Type::Uint | Type::Float,
-                Type::Int | Type::Uint | Type::Float,
-            ) => {
+            (Type::Int | Type::Float, Type::Int | Type::Float) => {
                 return Ok(Type::Bool);
             }
 

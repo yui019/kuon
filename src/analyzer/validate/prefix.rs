@@ -16,7 +16,7 @@ pub fn validate_prefix(
     }
 
     match validate_and_get_type(value, env)? {
-        type_ @ (Type::Int | Type::Uint) => return Ok(type_),
+        type_ @ (Type::Int | Type::Float) => return Ok(type_),
 
         type_ => {
             return Err(format!(

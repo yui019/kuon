@@ -37,7 +37,6 @@ pub enum TokenData {
     Any,    // any
     Null,   // null
     Int,    // int
-    Uint,   // uint
     Float,  // float
     Bool,   // bool
     Char,   // char

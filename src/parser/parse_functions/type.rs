@@ -17,7 +17,6 @@ pub fn parse_type(lexer: &mut Lexer) -> Result<Type, ParserError> {
                 TokenData::Any
                     | TokenData::Null
                     | TokenData::Int
-                    | TokenData::Uint
                     | TokenData::Float
                     | TokenData::Bool
                     | TokenData::Char
@@ -39,7 +38,6 @@ pub fn parse_type(lexer: &mut Lexer) -> Result<Type, ParserError> {
         TokenData::Any => Type::Any,
         TokenData::Null => Type::Null,
         TokenData::Int => Type::Int,
-        TokenData::Uint => Type::Uint,
         TokenData::Float => Type::Float,
         TokenData::Bool => Type::Bool,
         TokenData::Char => Type::Char,

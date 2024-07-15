@@ -636,19 +636,6 @@ impl<'a> Iterator for Lexer<'a> {
                 }
             }
 
-            'u' => {
-                let (next, _) = self.collect_while(|c| c.is_alphabetic());
-
-                if next == "int" {
-                    self.skip_chars(3);
-
-                    return Some(Token {
-                        data: TokenData::Uint,
-                        line: self.current_line,
-                    });
-                }
-            }
-
             'v' => {
                 let (next, _) = self.collect_while(|c| c.is_alphabetic());
 
