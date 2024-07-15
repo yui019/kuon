@@ -67,3 +67,19 @@ fn test5() {
     ";
     assert_eq!(eval(source), Value::Float(5.5));
 }
+
+#[test]
+fn test6() {
+    let source = "
+    fun factorial(n int) int {
+    	if n == 1 {
+	    	1
+	    } else {
+		    n * factorial(n - 1)
+	    }
+    }
+
+    factorial(5)
+    ";
+    assert_eq!(eval(source), Value::Int(120));
+}
