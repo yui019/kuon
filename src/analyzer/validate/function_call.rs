@@ -40,7 +40,10 @@ pub fn validate_function_call(
         let param_type = param_types[i].clone();
 
         if argument_type != param_type {
-            return Err(format!("Expected value of type {:?}", param_type));
+            return Err(format!(
+                "Expected value of type {:?}, got value of type {:?} instead",
+                param_type, argument_type
+            ));
         }
     }
 

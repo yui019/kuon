@@ -22,7 +22,7 @@ pub fn validate_infix(
 
         match (left_type, right_type) {
             (Type::Int, Type::Int) => {
-                return if *operator != TokenData::Slash {
+                return if *operator == TokenData::Slash {
                     Ok(Type::Float)
                 } else {
                     Ok(Type::Int)
