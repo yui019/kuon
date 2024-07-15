@@ -1,4 +1,4 @@
-use expression::Expression;
+use expression::{Expression, ExpressionData};
 use parse_functions::function_arguments::parse_function_arguments;
 use parse_functions::function_definition::parse_function_definition;
 use parse_functions::if_condition::parse_if_condition;
@@ -9,7 +9,7 @@ use util::token_matches;
 use crate::lexer::token::TokenData;
 use crate::lexer::{token::Token, Lexer};
 use crate::parser::parse_functions::block::parse_block;
-use crate::token_data;
+use crate::{expression, some_token_pat, token_pat};
 
 pub mod expression;
 mod parse_functions;
@@ -33,18 +33,24 @@ pub fn parse_source(lexer: &mut Lexer) -> Result<Expression, ParserError> {
             let mut require_semicolon = true;
 
             match expr {
-                Expression::FunctionDefinition { name, .. } => {
+                Expression {
+                    data: ExpressionData::FunctionDefinition { name, .. },
+                    ..
+                } => {
                     if name.is_none() {
-                        return Err(parser_error!(
+                        return parser_error!(
                             token.unwrap().line,
                             "Top level function definitions require a name"
-                        ));
+                        );
                     }
 
                     require_semicolon = false;
                 }
 
-                Expression::IfCondition { .. } => {
+                Expression {
+                    data: ExpressionData::IfCondition { .. },
+                    ..
+                } => {
                     require_semicolon = false;
                 }
 
@@ -54,13 +60,13 @@ pub fn parse_source(lexer: &mut Lexer) -> Result<Expression, ParserError> {
             if require_semicolon {
                 let next = lexer.next();
 
-                if !matches!(next, Some(token_data!(TokenData::Semicolon))) {
+                if !matches!(next, some_token_pat!(TokenData::Semicolon)) {
                     if let Some(token) = next {
-                        return Err(parser_error!(
+                        return parser_error!(
                             token.line,
                             "Expected semicolon, got {:?}",
                             token.data
-                        ));
+                        );
                     }
                 }
             }
@@ -69,7 +75,7 @@ pub fn parse_source(lexer: &mut Lexer) -> Result<Expression, ParserError> {
         }
     }
 
-    Ok(Expression::Block { expressions })
+    Ok(expression!(Block { expressions }, 0))
 }
 
 fn parse_expression_top_level(
@@ -87,54 +93,75 @@ fn expr_binding_power(
     min_binding_power: u8,
     top_level: bool,
 ) -> Result<Expression, ParserError> {
+    use TokenData::*;
+
     let mut left = match lexer.next() {
-        Some(token_data!(TokenData::ValueString(v))) => Expression::String(v),
-        Some(token_data!(TokenData::ValueChar(v))) => Expression::Char(v),
-        Some(token_data!(TokenData::ValueInt(v))) => Expression::Int(v),
-        Some(token_data!(TokenData::ValueFloat(v))) => Expression::Float(v),
-        Some(token_data!(TokenData::True)) => Expression::Bool(true),
-        Some(token_data!(TokenData::False)) => Expression::Bool(false),
-        Some(token_data!(TokenData::ValueIdentifier(v))) => {
-            Expression::Identifier(v)
+        some_token_pat!(ValueString(v), line) => {
+            expression!(String(v), line)
+        }
+        some_token_pat!(ValueChar(v), line) => {
+            expression!(Char(v), line)
+        }
+        some_token_pat!(ValueInt(v), line) => {
+            expression!(Int(v), line)
+        }
+        some_token_pat!(ValueFloat(v), line) => {
+            expression!(Float(v), line)
+        }
+        some_token_pat!(True, line) => {
+            expression!(Bool(true), line)
+        }
+        some_token_pat!(False, line) => {
+            expression!(Bool(false), line)
+        }
+        some_token_pat!(ValueIdentifier(v), line) => {
+            expression!(Identifier(v), line)
         }
 
-        Some(operator @ token_data!(TokenData::Minus)) => {
+        Some(operator @ token_pat!(TokenData::Minus, line)) => {
             let (_, right_binding_power) =
                 prefix_binding_power(&operator.data).unwrap();
             let right = expr_binding_power(lexer, right_binding_power, false)?;
 
-            Expression::Prefix {
-                operator: operator.data,
-                value: Box::new(right),
-            }
+            expression!(
+                Prefix {
+                    operator: operator.data,
+                    value: Box::new(right),
+                },
+                line
+            )
         }
 
-        Some(token_data!(TokenData::LeftParenNormal)) => {
+        some_token_pat!(LeftParenNormal) => {
             let inner_expression = parse_expression(lexer);
 
             let next = lexer.next();
             if !token_matches(&next, &TokenData::RightParenNormal) {
-                return Err(parser_error!(next.unwrap().line, "Expected ("));
+                return parser_error!(next.unwrap().line, "Expected (");
             }
 
             inner_expression?
         }
 
-        Some(token_data!(TokenData::LeftParenCurly)) => parse_block(lexer)?,
+        some_token_pat!(TokenData::LeftParenCurly, line) => {
+            parse_block(lexer, line)?
+        }
 
-        Some(token_data!(TokenData::If)) => parse_if_condition(lexer)?,
+        some_token_pat!(TokenData::If, line) => {
+            parse_if_condition(lexer, line)?
+        }
 
-        token @ Some(token_data!(TokenData::Val | TokenData::Var)) => {
+        token @ some_token_pat!(TokenData::Val | TokenData::Var) => {
             parse_variable_definition(lexer, token.unwrap())?
         }
 
-        Some(token_data!(TokenData::Fun)) => {
-            parse_function_definition(lexer, top_level)?
+        some_token_pat!(TokenData::Fun, line) => {
+            parse_function_definition(lexer, top_level, line)?
         }
 
-        None => return Err(parser_error_eof!("Expected expression")),
+        None => return parser_error_eof!("Expected expression"),
         Some(t) => {
-            return Err(parser_error!(t.line, "Unexpected token: {:?}", t.data))
+            return parser_error!(t.line, "Unexpected token: {:?}", t.data)
         }
     };
 
@@ -155,16 +182,22 @@ fn expr_binding_power(
 
                 left = match operator.data {
                     // function call
-                    TokenData::LeftParenNormal => Expression::FunctionCall {
-                        function: Box::new(left),
-                        arguments: parse_function_arguments(lexer)?,
-                    },
+                    TokenData::LeftParenNormal => expression!(
+                        FunctionCall {
+                            function: Box::new(left.clone()),
+                            arguments: parse_function_arguments(lexer)?,
+                        },
+                        left.line
+                    ),
 
                     // else
-                    _ => Expression::Postfix {
-                        value: Box::new(left),
-                        operator: operator.data,
-                    },
+                    _ => expression!(
+                        Postfix {
+                            value: Box::new(left.clone()),
+                            operator: operator.data,
+                        },
+                        left.line
+                    ),
                 };
 
                 continue;
@@ -187,31 +220,40 @@ fn expr_binding_power(
                     // variable assignment
                     TokenData::Equals => {
                         let name = match left {
-                            Expression::Identifier(identifier) => identifier,
+                            Expression {
+                                data: ExpressionData::Identifier(identifier),
+                                ..
+                            } => identifier,
 
                             _ => {
-                                return Err(parser_error!(
+                                return parser_error!(
                                     // TODO: this should be the line of the
                                     // `left` expression, but expressions don't
                                     // have store lines yet (they should!!)
                                     operator.line,
                                     "Variable name should be an identifier"
-                                ));
+                                );
                             }
                         };
 
-                        Expression::VariableAssignment {
-                            name,
-                            value: Box::new(right),
-                        }
+                        expression!(
+                            VariableAssignment {
+                                name,
+                                value: Box::new(right),
+                            },
+                            left.line
+                        )
                     }
 
                     // else
-                    _ => Expression::Infix {
-                        left: Box::new(left),
-                        operator: operator.data,
-                        right: Box::new(right),
-                    },
+                    _ => expression!(
+                        Infix {
+                            left: Box::new(left.clone()),
+                            operator: operator.data,
+                            right: Box::new(right),
+                        },
+                        left.line
+                    ),
                 };
 
                 continue;

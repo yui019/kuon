@@ -19,7 +19,7 @@ fn main() {
     match &mut parse_result {
         Ok(ref mut ast) => {
             if let Err(e) = analyzer::validate(ast) {
-                cprintln!("<red>[Analyzer error]</red> {}", e);
+                cprintln!("<red>[Analyzer error]</red> {:?}", e);
                 return;
             } else {
                 println!("{:#?}", ast);

@@ -1,5 +1,6 @@
 use crate::{
-    analyzer::env::Environment,
+    analyzer::{analyzer_error::AnalyzerError, env::Environment},
+    analyzer_error,
     lexer::token::TokenData,
     parser::{expression::Expression, r#type::Type},
 };
@@ -10,7 +11,7 @@ pub fn validate_prefix(
     env: &mut Environment,
     operator: &TokenData,
     value: &Expression,
-) -> Result<Type, String> {
+) -> Result<Type, AnalyzerError> {
     if *operator != TokenData::Minus {
         unreachable!();
     }
@@ -19,10 +20,11 @@ pub fn validate_prefix(
         type_ @ (Type::Int | Type::Float) => return Ok(type_),
 
         type_ => {
-            return Err(format!(
+            return analyzer_error!(
+                value.line,
                 "Prefix operator - can not work on an expression of type {:?}",
                 type_
-            ))
+            )
         }
     }
 }

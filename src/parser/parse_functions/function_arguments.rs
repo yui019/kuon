@@ -4,7 +4,7 @@ use crate::{
         Lexer,
     },
     parser::parser_error::ParserError,
-    parser_error, parser_error_eof, token_data,
+    parser_error, parser_error_eof, some_token_pat,
 };
 
 use super::super::{expression::Expression, parse_expression};
@@ -16,7 +16,7 @@ pub fn parse_function_arguments(
     let mut arguments: Vec<Expression> = vec![];
 
     // immediately return if no arguments
-    if matches!(lexer.peek(), Some(token_data!(TokenData::RightParenNormal))) {
+    if matches!(lexer.peek(), some_token_pat!(TokenData::RightParenNormal)) {
         lexer.next();
 
         return Ok(arguments);
@@ -27,24 +27,24 @@ pub fn parse_function_arguments(
         arguments.push(argument);
 
         match lexer.peek() {
-            Some(token_data!(TokenData::RightParenNormal)) => {
+            some_token_pat!(TokenData::RightParenNormal) => {
                 lexer.next();
                 break;
             }
 
-            Some(token_data!(TokenData::Comma)) => {
+            some_token_pat!(TokenData::Comma) => {
                 lexer.next();
                 continue;
             }
 
             Some(t) => {
-                return Err(parser_error!(
+                return parser_error!(
                     t.line,
                     "Expected , or ), got {:?}",
                     t.data
-                ))
+                )
             }
-            None => return Err(parser_error_eof!("Expected , or )")),
+            None => return parser_error_eof!("Expected , or )"),
         }
     }
 

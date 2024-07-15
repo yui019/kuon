@@ -8,9 +8,15 @@ use prefix::validate_prefix;
 use variable_assignment::validate_variable_assignment;
 use variable_definition::validate_variable_definition;
 
-use crate::parser::{expression::Expression, r#type::Type};
+use crate::{
+    analyzer_error, expression_pat,
+    parser::{
+        expression::{Expression, ExpressionData},
+        r#type::Type,
+    },
+};
 
-use super::env::Environment;
+use super::{analyzer_error::AnalyzerError, env::Environment};
 
 mod block;
 mod function_call;
@@ -25,69 +31,96 @@ mod variable_definition;
 pub fn validate_and_get_type(
     expression: &Expression,
     env: &mut Environment,
-) -> Result<Type, String> {
+) -> Result<Type, AnalyzerError> {
     match expression {
-        Expression::Null => return Ok(Type::Null),
+        expression_pat!(ExpressionData::Null) => return Ok(Type::Null),
 
-        Expression::String(_) => return Ok(Type::String),
+        expression_pat!(ExpressionData::String(_)) => return Ok(Type::String),
 
-        Expression::Char(_) => return Ok(Type::Char),
+        expression_pat!(ExpressionData::Char(_)) => return Ok(Type::Char),
 
-        Expression::Int(_) => return Ok(Type::Int),
+        expression_pat!(ExpressionData::Int(_)) => return Ok(Type::Int),
 
-        Expression::Float(_) => return Ok(Type::Float),
+        expression_pat!(ExpressionData::Float(_)) => return Ok(Type::Float),
 
-        Expression::Bool(_) => return Ok(Type::Bool),
+        expression_pat!(ExpressionData::Bool(_)) => return Ok(Type::Bool),
 
-        Expression::Identifier(identifier) => {
-            validate_identifier(env, identifier)
+        expression_pat!(ExpressionData::Identifier(identifier), line) => {
+            validate_identifier(env, *line, identifier)
         }
 
-        Expression::Prefix { operator, value } => {
+        expression_pat!(ExpressionData::Prefix { operator, value }) => {
             validate_prefix(env, operator, value)
         }
 
-        Expression::Infix {
+        expression_pat!(ExpressionData::Infix {
             left,
             operator,
             right,
-        } => validate_infix(env, left, operator, right),
+        }) => validate_infix(env, left, operator, right),
 
-        Expression::Postfix { .. } => todo!(),
+        expression_pat!(ExpressionData::Postfix { .. }) => todo!(),
 
-        Expression::Block { expressions } => validate_block(env, expressions),
+        expression_pat!(ExpressionData::Block { expressions }) => {
+            validate_block(env, expressions)
+        }
 
-        Expression::IfCondition {
+        expression_pat!(
+            ExpressionData::IfCondition {
+                condition,
+                true_branch,
+                else_branch,
+            },
+            line
+        ) => validate_if_condition(
+            env,
+            *line,
             condition,
             true_branch,
             else_branch,
-        } => validate_if_condition(env, condition, true_branch, else_branch),
+        ),
 
-        Expression::VariableDefinition {
-            type_,
-            value,
-            name,
-            constant,
-        } => validate_variable_definition(env, type_, value, name, *constant),
+        expression_pat!(
+            ExpressionData::VariableDefinition {
+                type_,
+                value,
+                name,
+                constant,
+            },
+            line
+        ) => validate_variable_definition(
+            env, *line, type_, value, name, *constant,
+        ),
 
-        Expression::VariableAssignment { name, value } => {
-            validate_variable_assignment(env, name, value)
-        }
+        expression_pat!(
+            ExpressionData::VariableAssignment { name, value },
+            line
+        ) => validate_variable_assignment(env, *line, name, value),
 
-        Expression::FunctionDefinition {
+        expression_pat!(
+            ExpressionData::FunctionDefinition {
+                name,
+                params,
+                return_type,
+                body,
+            },
+            line
+        ) => validate_function_definition(
+            env,
+            *line,
             name,
             params,
             return_type,
             body,
-        } => validate_function_definition(env, name, params, return_type, body),
+        ),
 
-        Expression::FunctionCall {
+        expression_pat!(ExpressionData::FunctionCall {
             function,
             arguments,
-        } => validate_function_call(env, function, arguments),
+        }) => validate_function_call(env, function, arguments),
 
-        Expression::Type { .. } => {
-            return Err(format!("Cannot use a type as an expression"))
+        expression_pat!(ExpressionData::Type { .. }, line) => {
+            return analyzer_error!(*line, "Cannot use a type as an expression")
         }
     }
 }

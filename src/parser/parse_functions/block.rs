@@ -1,10 +1,11 @@
 use crate::{
+    expression,
     lexer::{
         token::{Token, TokenData},
         Lexer,
     },
-    parser::parser_error::ParserError,
-    parser_error, parser_error_eof, token_data,
+    parser::{expression::ExpressionData, parser_error::ParserError},
+    parser_error, parser_error_eof, some_token_pat,
 };
 
 use super::super::{
@@ -12,14 +13,17 @@ use super::super::{
 };
 
 /// Called after Token::LeftParenCurly
-pub fn parse_block(lexer: &mut Lexer) -> Result<Expression, ParserError> {
+pub fn parse_block(
+    lexer: &mut Lexer,
+    line: usize,
+) -> Result<Expression, ParserError> {
     let mut expressions: Vec<Expression> = vec![];
 
     if token_matches(&lexer.peek(), &TokenData::RightParenCurly) {
-        lexer.next();
-        expressions.push(Expression::Null);
+        let token = lexer.next().unwrap();
+        expressions.push(expression!(Null, token.line));
 
-        return Ok(Expression::Block { expressions });
+        return Ok(expression!(Block { expressions }, line));
     }
 
     loop {
@@ -30,11 +34,17 @@ pub fn parse_block(lexer: &mut Lexer) -> Result<Expression, ParserError> {
 
         let expression = parse_expression(lexer)?;
 
-        if matches!(expression, Expression::FunctionDefinition { .. }) {
-            return Err(parser_error!(
+        if matches!(
+            expression,
+            Expression {
+                data: ExpressionData::FunctionDefinition { .. },
+                ..
+            }
+        ) {
+            return parser_error!(
                 first_token.unwrap().line,
                 "Standalone function definitions aren't allowed below top-level"
-            ));
+            );
         }
 
         expressions.push(expression.clone());
@@ -45,7 +55,10 @@ pub fn parse_block(lexer: &mut Lexer) -> Result<Expression, ParserError> {
 
         match expression {
             // semicolons aren't required after if conditions
-            Expression::IfCondition { .. } => {
+            Expression {
+                data: ExpressionData::IfCondition { .. },
+                ..
+            } => {
                 require_semicolon = false;
             }
 
@@ -57,42 +70,42 @@ pub fn parse_block(lexer: &mut Lexer) -> Result<Expression, ParserError> {
 
             if !matches!(
                 next,
-                Some(token_data!(
+                some_token_pat!(
                     TokenData::Semicolon | TokenData::RightParenCurly
-                ))
+                )
             ) {
                 if let Some(token) = next {
-                    return Err(parser_error!(
+                    return parser_error!(
                         token.line,
                         "Expected semicolon, got {:?}",
                         token.data
-                    ));
+                    );
                 }
             }
         }
 
         match lexer.peek() {
-            Some(token_data!(TokenData::Semicolon)) => {
+            some_token_pat!(TokenData::Semicolon) => {
                 lexer.next();
 
                 if token_matches(&lexer.peek(), &TokenData::RightParenCurly) {
-                    lexer.next();
-                    expressions.push(Expression::Null);
+                    let token = lexer.next().unwrap();
+                    expressions.push(expression!(Null, token.line));
                     break;
                 }
 
                 continue;
             }
 
-            Some(token_data!(TokenData::RightParenCurly)) => {
+            some_token_pat!(TokenData::RightParenCurly) => {
                 lexer.next();
                 break;
             }
 
             Some(_) => continue,
-            None => return Err(parser_error_eof!("Expected }}")),
+            None => return parser_error_eof!("Expected }}"),
         }
     }
 
-    Ok(Expression::Block { expressions })
+    Ok(expression!(Block { expressions }, line))
 }

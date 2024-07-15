@@ -1,6 +1,7 @@
 use crate::{
     compiler::{chunk::Chunk, operation::Operation, value::Value},
-    parser::expression::Expression,
+    expression_pat,
+    parser::expression::{Expression, ExpressionData},
 };
 
 use super::function_definition::compile_function_definition;
@@ -10,25 +11,29 @@ pub fn compile_value(
     is_function: bool,
     value: &Expression,
 ) -> Result<(), String> {
+    use ExpressionData::*;
+
     match value {
-        Expression::Null => chunk.add_operation(&Operation::Push(Value::Null)),
-        Expression::String(v) => {
+        expression_pat!(Null) => {
+            chunk.add_operation(&Operation::Push(Value::Null))
+        }
+        expression_pat!(ExpressionData::String(v)) => {
             chunk.add_operation(&Operation::Push(Value::String(v.clone())))
         }
-        Expression::Char(v) => {
+        expression_pat!(Char(v)) => {
             chunk.add_operation(&Operation::Push(Value::Char(v.clone())))
         }
-        Expression::Int(v) => {
+        expression_pat!(Int(v)) => {
             chunk.add_operation(&Operation::Push(Value::Int(v.clone())))
         }
-        Expression::Float(v) => {
+        expression_pat!(Float(v)) => {
             chunk.add_operation(&Operation::Push(Value::Float(v.clone())))
         }
-        Expression::Bool(v) => {
+        expression_pat!(Bool(v)) => {
             chunk.add_operation(&Operation::Push(Value::Bool(v.clone())))
         }
 
-        Expression::Identifier(v) => {
+        expression_pat!(Identifier(v)) => {
             if is_function {
                 let function_index = chunk.function_index_from_name.get(v);
                 if function_index.is_some() {
@@ -42,9 +47,12 @@ pub fn compile_value(
             }
         }
 
-        Expression::FunctionDefinition {
-            name, params, body, ..
-        } => {
+        expression_pat!(FunctionDefinition {
+            name,
+            params,
+            body,
+            ..
+        }) => {
             let index = compile_function_definition(
                 chunk,
                 is_function,

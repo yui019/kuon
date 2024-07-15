@@ -1,5 +1,6 @@
 use crate::{
-    analyzer::env::Environment,
+    analyzer::{analyzer_error::AnalyzerError, env::Environment},
+    analyzer_error,
     parser::{expression::Expression, r#type::Type},
 };
 
@@ -9,7 +10,7 @@ pub fn validate_function_call(
     env: &mut Environment,
     function: &Expression,
     arguments: &Vec<Expression>,
-) -> Result<Type, String> {
+) -> Result<Type, AnalyzerError> {
     let function_type = validate_and_get_type(&function, env)?;
 
     let return_type: Type;
@@ -24,15 +25,22 @@ pub fn validate_function_call(
             param_types = b;
         }
 
-        _ => return Err(format!("Not a function: {:?}", *function)),
+        _ => {
+            return analyzer_error!(
+                function.line,
+                "Not a function: {:?}",
+                *function
+            )
+        }
     };
 
     if arguments.len() != param_types.len() {
-        return Err(format!(
+        return analyzer_error!(
+            function.line,
             "Expected {} arguments, {} provided",
             param_types.len(),
             arguments.len()
-        ));
+        );
     }
 
     for i in 0..param_types.len() {
@@ -40,10 +48,12 @@ pub fn validate_function_call(
         let param_type = param_types[i].clone();
 
         if argument_type != param_type {
-            return Err(format!(
+            return analyzer_error!(
+                arguments[i].line,
                 "Expected value of type {:?}, got value of type {:?} instead",
-                param_type, argument_type
-            ));
+                param_type,
+                argument_type
+            );
         }
     }
 

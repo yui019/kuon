@@ -9,7 +9,7 @@ pub struct FunctionParam {
 }
 
 #[derive(Debug, Clone)]
-pub enum Expression {
+pub enum ExpressionData {
     Null,
 
     String(String),
@@ -72,4 +72,10 @@ pub enum Expression {
     Type {
         type_: Type,
     },
+}
+
+#[derive(Debug, Clone)]
+pub struct Expression {
+    pub data: ExpressionData,
+    pub line: usize,
 }

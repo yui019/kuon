@@ -9,14 +9,14 @@ pub struct ParserError {
 #[macro_export]
 macro_rules! parser_error {
     ($line:expr, $($arg:tt)*) => {{
-        $crate::parser::parser_error::ParserError::new($line as i32, format!($($arg)*))
+        Err($crate::parser::parser_error::ParserError::new($line as i32, format!($($arg)*)))
     }}
 }
 
 #[macro_export]
 macro_rules! parser_error_eof {
     ($($arg:tt)*) => {{
-        $crate::parser::parser_error::ParserError::new(-1, format!($($arg)*))
+        Err($crate::parser::parser_error::ParserError::new(-1, format!($($arg)*)))
     }}
 }
 

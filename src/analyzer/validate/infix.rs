@@ -1,5 +1,6 @@
 use crate::{
-    analyzer::env::Environment,
+    analyzer::{analyzer_error::AnalyzerError, env::Environment},
+    analyzer_error,
     lexer::token::TokenData,
     parser::{expression::Expression, r#type::Type},
 };
@@ -11,7 +12,7 @@ pub fn validate_infix(
     left: &Expression,
     operator: &TokenData,
     right: &Expression,
-) -> Result<Type, String> {
+) -> Result<Type, AnalyzerError> {
     if *operator == TokenData::Minus
         || *operator == TokenData::Plus
         || *operator == TokenData::Star
@@ -42,10 +43,11 @@ pub fn validate_infix(
             }
 
             _ => {
-                return Err(format!(
+                return analyzer_error!(
+                    left.line,
                     "Operator {:?} only works on numbers",
                     operator
-                ))
+                )
             }
         }
     } else if *operator == TokenData::LessThan
@@ -62,10 +64,11 @@ pub fn validate_infix(
             }
 
             _ => {
-                return Err(format!(
+                return analyzer_error!(
+                    left.line,
                     "Operator {:?} only works on numbers",
                     operator
-                ))
+                )
             }
         }
     } else if *operator == TokenData::EqualsEquals {
@@ -75,10 +78,11 @@ pub fn validate_infix(
         if left_type == right_type {
             return Ok(Type::Bool);
         } else {
-            return Err(format!(
+            return analyzer_error!(
+                left.line,
                 "Operator {:?} only works on operands of the same type",
                 operator
-            ));
+            );
         }
     } else {
         unreachable!();

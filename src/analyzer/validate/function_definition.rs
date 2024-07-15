@@ -1,5 +1,6 @@
 use crate::{
-    analyzer::env::Environment,
+    analyzer::{analyzer_error::AnalyzerError, env::Environment},
+    analyzer_error,
     parser::{
         expression::{Expression, FunctionParam},
         r#type::Type,
@@ -10,11 +11,12 @@ use super::validate_and_get_type;
 
 pub fn validate_function_definition(
     env: &mut Environment,
+    line: usize,
     name: &Option<String>,
     params: &Vec<FunctionParam>,
     return_type: &Type,
     body: &Box<Expression>,
-) -> Result<Type, String> {
+) -> Result<Type, AnalyzerError> {
     let mut param_types: Vec<Type> = vec![];
     for param in params {
         param_types.push(param.type_.clone());
@@ -26,10 +28,11 @@ pub fn validate_function_definition(
         let name = name.clone().unwrap();
 
         if env.get_function(&name).is_some() {
-            return Err(format!(
+            return analyzer_error!(
+                line,
                 "A function with the name {} already exists",
                 name
-            ));
+            );
         }
 
         env.add_function(name, param_types.clone(), return_type.clone());
@@ -51,10 +54,12 @@ pub fn validate_function_definition(
     let body_type = validate_and_get_type(&body, &mut body_env)?;
 
     if body_type != *return_type {
-        return Err(format!(
+        return analyzer_error!(
+            body.line,
             "Function should return {:?}, but it returns {:?}",
-            return_type, body_type
-        ));
+            return_type,
+            body_type
+        );
     }
 
     return Ok(Type::Function {

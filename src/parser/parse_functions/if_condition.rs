@@ -1,6 +1,6 @@
 use crate::{
     lexer::{token::TokenData, Lexer},
-    parser::parser_error::ParserError,
+    parser::{expression, parser_error::ParserError},
 };
 
 use super::super::{
@@ -10,6 +10,7 @@ use super::super::{
 /// Called after Token::LeftParenCurly
 pub fn parse_if_condition(
     lexer: &mut Lexer,
+    line: usize,
 ) -> Result<Expression, ParserError> {
     let condition = Box::new(parse_expression(lexer)?);
     let true_branch = Box::new(parse_expression(lexer)?);
@@ -20,9 +21,12 @@ pub fn parse_if_condition(
         else_branch = Some(Box::new(parse_expression(lexer)?));
     }
 
-    Ok(Expression::IfCondition {
-        condition,
-        true_branch,
-        else_branch,
-    })
+    Ok(expression!(
+        IfCondition {
+            condition,
+            true_branch,
+            else_branch,
+        },
+        line
+    ))
 }

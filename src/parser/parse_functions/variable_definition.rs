@@ -1,10 +1,11 @@
 use crate::{
+    expression,
     lexer::{
-        token::{Token, TokenData},
+        token::{Token, TokenData::*},
         Lexer,
     },
     parser::{parser_error::ParserError, r#type::Type},
-    parser_error, parser_error_eof, token_data,
+    parser_error, parser_error_eof, some_token_pat,
 };
 
 use super::{
@@ -20,20 +21,20 @@ pub fn parse_variable_definition(
     let name = lexer.next();
 
     let name = match name {
-        Some(token_data!(TokenData::ValueIdentifier(identifier))) => identifier,
+        some_token_pat!(ValueIdentifier(identifier)) => identifier,
 
-        None => return Err(parser_error_eof!("Expected variable name")),
+        None => return parser_error_eof!("Expected variable name"),
         Some(t) => {
-            return Err(parser_error!(
+            return parser_error!(
                 t.line,
                 "Variable name should be an identifier"
-            ))
+            )
         }
     };
 
     let mut type_: Option<Box<Type>> = None;
 
-    if !token_matches(&lexer.peek(), &TokenData::Equals) {
+    if !token_matches(&lexer.peek(), &Equals) {
         type_ = Some(Box::new(parse_type(lexer)?));
     }
 
@@ -41,10 +42,13 @@ pub fn parse_variable_definition(
 
     let value = Box::new(parse_expression(lexer)?);
 
-    Ok(Expression::VariableDefinition {
-        constant: start_token.data == TokenData::Val,
-        name,
-        value,
-        type_,
-    })
+    Ok(expression!(
+        VariableDefinition {
+            constant: start_token.data == Val,
+            name,
+            value,
+            type_,
+        },
+        start_token.line
+    ))
 }

@@ -1,5 +1,6 @@
 use crate::{
-    analyzer::env::Environment,
+    analyzer::{analyzer_error::AnalyzerError, env::Environment},
+    analyzer_error,
     parser::{expression::Expression, r#type::Type},
 };
 
@@ -7,13 +8,17 @@ use super::validate_and_get_type;
 
 pub fn validate_if_condition(
     env: &mut Environment,
+    line: usize,
     condition: &Expression,
     true_branch: &Expression,
     else_branch: &Option<Box<Expression>>,
-) -> Result<Type, String> {
+) -> Result<Type, AnalyzerError> {
     let condition_type = validate_and_get_type(&condition, env)?;
     if !matches!(condition_type, Type::Bool) {
-        return Err(format!("The condition needs to be a boolean"));
+        return analyzer_error!(
+            condition.line,
+            "The condition needs to be a boolean"
+        );
     }
 
     if else_branch.is_none() {
@@ -26,9 +31,10 @@ pub fn validate_if_condition(
     let else_type = validate_and_get_type(&else_branch, env)?;
 
     if true_type != else_type {
-        return Err(format!(
+        return analyzer_error!(
+            line,
             "The true and else branch must have the same type"
-        ));
+        );
     }
 
     return Ok(true_type);

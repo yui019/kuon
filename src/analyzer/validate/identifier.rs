@@ -1,9 +1,14 @@
-use crate::{analyzer::env::Environment, parser::r#type::Type};
+use crate::{
+    analyzer::{analyzer_error::AnalyzerError, env::Environment},
+    analyzer_error,
+    parser::r#type::Type,
+};
 
 pub fn validate_identifier(
     env: &mut Environment,
+    line: usize,
     identifier: &String,
-) -> Result<Type, String> {
+) -> Result<Type, AnalyzerError> {
     if let Some(function) = env.get_function(&identifier) {
         return Ok(Type::Function {
             param_types: function.param_types,
@@ -12,6 +17,6 @@ pub fn validate_identifier(
     } else if let Some(variable) = env.get_variable(&identifier) {
         return Ok(variable.type_);
     } else {
-        return Err(format!("Unknown variable: {}", identifier));
+        return analyzer_error!(line, "Unknown variable: {}", identifier);
     }
 }

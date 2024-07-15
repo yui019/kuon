@@ -9,7 +9,10 @@ use compile_functions::{
 };
 use operation::Operation;
 
-use crate::parser::expression::Expression;
+use crate::{
+    expression_pat,
+    parser::expression::{Expression, ExpressionData},
+};
 
 pub mod chunk;
 mod compile_functions;
@@ -19,7 +22,7 @@ pub mod value;
 pub fn compile_source(ast: &Expression) -> Result<Chunk, String> {
     let mut chunk = Chunk::new();
 
-    if let Expression::Block { expressions } = ast {
+    if let expression_pat!(ExpressionData::Block { expressions }) = ast {
         // TODO: handle top level function definitions specially here
         for expression in expressions {
             compile_expression(&mut chunk, expression, false)?;
@@ -42,63 +45,65 @@ fn compile_expression(
                         * and passed down usually, unless compiling a value
                         * which you know is a function */
 ) -> Result<(), String> {
+    use ExpressionData::*;
+
     match expression {
-        value @ (Expression::Null
-        | Expression::String(_)
-        | Expression::Char(_)
-        | Expression::Int(_)
-        | Expression::Float(_)
-        | Expression::Bool(_)
-        | Expression::Identifier(_)
+        value @ Expression {data: ExpressionData::Null
+        | ExpressionData::String(_)
+        | ExpressionData::Char(_)
+        | ExpressionData::Int(_)
+        | ExpressionData::Float(_)
+        | ExpressionData::Bool(_)
+        | ExpressionData::Identifier(_)
         // function definitions without names are closures, so they are handled like all values
-        | Expression::FunctionDefinition { name: None, .. }) => {
+        | ExpressionData::FunctionDefinition { name: None, .. }, ..} => {
             compile_value(chunk, is_function, value)?
         }
 
-        Expression::Prefix { operator, value } => {
+        expression_pat!(Prefix { operator, value }) => {
             compile_prefix(chunk, is_function, operator, &value)?
         }
 
-        Expression::Infix {
+        expression_pat!(Infix {
             left,
             operator,
             right,
-        } => compile_infix(chunk, is_function, left, operator, right)?,
+        }) => compile_infix(chunk, is_function, left, operator, right)?,
 
         // no Postfix expressions yet
-        Expression::Postfix { .. } => {}
+        expression_pat!(Postfix { .. }) => {}
 
-        Expression::Block { expressions } => {
+        expression_pat!(Block { expressions }) => {
             for expression in expressions {
                 compile_expression(chunk, expression, is_function)?;
             }
         }
 
-        Expression::IfCondition {
+        expression_pat!(IfCondition {
             condition,
             true_branch,
             else_branch,
-        } => compile_if_condition(chunk, is_function, condition, true_branch, else_branch)?,
+        }) => compile_if_condition(chunk, is_function, condition, true_branch, else_branch)?,
 
-        Expression::VariableDefinition { name, value, .. } => {
+        expression_pat!(VariableDefinition { name, value, .. }) => {
             compile_variable_definition(chunk, is_function, name, value)?
         }
 
-        Expression::VariableAssignment { name, value } => {
+        expression_pat!(VariableAssignment { name, value }) => {
             compile_variable_assignment(chunk, is_function, name, value)?
         }
 
-        Expression::FunctionDefinition {
+        expression_pat!(FunctionDefinition {
             params, body, name, ..
-        } => {
+        }) => {
             compile_function_definition(chunk, is_function, params, body, name)?;
             ()
         }
 
-        Expression::FunctionCall { function, arguments } => compile_function_call(chunk, is_function, function, arguments)?,
+        expression_pat!(FunctionCall { function, arguments }) => compile_function_call(chunk, is_function, function, arguments)?,
 
         // this should be unreachable unless I seriously mess something up
-        Expression::Type { .. } => unreachable!(),
+        expression_pat!(Type { .. }) => unreachable!(),
     }
 
     Ok(())
