@@ -22,6 +22,14 @@ pub fn validate_variable_definition(
         );
     }
 
+    if env.get_function(name).is_some() {
+        return analyzer_error!(
+            line,
+            "Name {} is taken by an existing function",
+            name
+        );
+    }
+
     if let Some(type_) = type_ {
         if **type_ != validate_and_get_type(&value, env)? {
             return analyzer_error!(
