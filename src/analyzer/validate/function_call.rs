@@ -1,5 +1,7 @@
 use crate::{
-    analyzer::{analyzer_error::AnalyzerError, env::Environment},
+    analyzer::{
+        analyzer_error::AnalyzerError, env::Environment, util::types_equal,
+    },
     analyzer_error,
     parser::{expression::Expression, r#type::Type},
 };
@@ -47,7 +49,7 @@ pub fn validate_function_call(
         let argument_type = validate_and_get_type(&arguments[i], env)?;
         let param_type = param_types[i].clone();
 
-        if argument_type != param_type {
+        if !types_equal(env, &argument_type, &param_type) {
             return analyzer_error!(
                 arguments[i].line,
                 "Expected value of type {:?}, got value of type {:?} instead",

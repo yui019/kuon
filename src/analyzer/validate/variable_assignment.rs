@@ -1,5 +1,7 @@
 use crate::{
-    analyzer::{analyzer_error::AnalyzerError, env::Environment},
+    analyzer::{
+        analyzer_error::AnalyzerError, env::Environment, util::types_equal,
+    },
     analyzer_error,
     parser::{expression::Expression, r#type::Type},
 };
@@ -33,7 +35,7 @@ pub fn validate_variable_assignment(
 
     let value_type = validate_and_get_type(value, env)?;
 
-    if value_type != var.type_ {
+    if !types_equal(env, &value_type, &var.type_) {
         return analyzer_error!(
             value.line,
             "Expected value of type {:?}, got value of type {:?} instead",

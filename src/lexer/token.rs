@@ -54,8 +54,9 @@ pub enum TokenData {
     True,  // true
     False, // false
 
-    Struct, // struct
-    Enum,   // enum
+    Struct,   // struct
+    MkStruct, // mkstruct
+    Enum,     // enum
 
     Interface, // interface
 

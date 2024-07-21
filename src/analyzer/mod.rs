@@ -7,6 +7,7 @@ use crate::{
 
 mod analyzer_error;
 mod env;
+pub mod util;
 mod validate;
 
 pub fn validate(ast: &Expression) -> Result<(), AnalyzerError> {

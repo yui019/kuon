@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 #[derive(Debug, Clone, PartialEq)]
 pub enum Type {
     Any,
@@ -12,4 +14,10 @@ pub enum Type {
         param_types: Vec<Type>,
         return_type: Box<Type>,
     },
+
+    Struct {
+        fields: HashMap<String, Type>,
+    },
+
+    UserDefined(String),
 }

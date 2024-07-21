@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 #[derive(Debug, Clone, PartialEq)]
 pub enum Value {
     Null,
@@ -10,4 +12,6 @@ pub enum Value {
     // the usize parameter is an index into the functions Vec field of the
     // Chunk struct
     Function(usize),
+
+    Struct(HashMap<String, Value>),
 }

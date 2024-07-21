@@ -2,6 +2,8 @@ use expression::{Expression, ExpressionData};
 use parse_functions::function_arguments::parse_function_arguments;
 use parse_functions::function_definition::parse_function_definition;
 use parse_functions::if_condition::parse_if_condition;
+use parse_functions::make_struct::parse_make_struct;
+use parse_functions::struct_definition::parse_struct_definition;
 use parse_functions::variable_definition::parse_variable_definition;
 use parser_error::ParserError;
 use util::token_matches;
@@ -41,6 +43,20 @@ pub fn parse_source(lexer: &mut Lexer) -> Result<Expression, ParserError> {
                         return parser_error!(
                             token.unwrap().line,
                             "Top level function definitions require a name"
+                        );
+                    }
+
+                    require_semicolon = false;
+                }
+
+                Expression {
+                    data: ExpressionData::StructDefinition { name, .. },
+                    ..
+                } => {
+                    if name.is_none() {
+                        return parser_error!(
+                            token.unwrap().line,
+                            "Top level struct definitions require a name"
                         );
                     }
 
@@ -115,7 +131,13 @@ fn expr_binding_power(
             expression!(Bool(false), line)
         }
         some_token_pat!(ValueIdentifier(v), line) => {
-            expression!(Identifier(v), line)
+            if matches!(lexer.peek(), some_token_pat!(LeftParenCurly))
+                && min_binding_power == 0
+            {
+                parse_make_struct(lexer, line, Some(v))?
+            } else {
+                expression!(Identifier(v), line)
+            }
         }
 
         Some(operator @ token_pat!(TokenData::Minus, line)) => {
@@ -157,6 +179,14 @@ fn expr_binding_power(
 
         some_token_pat!(TokenData::Fun, line) => {
             parse_function_definition(lexer, top_level, line)?
+        }
+
+        some_token_pat!(TokenData::Struct, line) => {
+            parse_struct_definition(lexer, top_level, line)?
+        }
+
+        some_token_pat!(TokenData::MkStruct, line) => {
+            parse_make_struct(lexer, line, None)?
         }
 
         None => return parser_error_eof!("Expected expression"),
@@ -227,10 +257,7 @@ fn expr_binding_power(
 
                             _ => {
                                 return parser_error!(
-                                    // TODO: this should be the line of the
-                                    // `left` expression, but expressions don't
-                                    // have store lines yet (they should!!)
-                                    operator.line,
+                                    left.line,
                                     "Variable name should be an identifier"
                                 );
                             }
@@ -240,6 +267,31 @@ fn expr_binding_power(
                             VariableAssignment {
                                 name,
                                 value: Box::new(right),
+                            },
+                            left.line
+                        )
+                    }
+
+                    // Field access
+                    TokenData::Dot => {
+                        let field = match right {
+                            Expression {
+                                data: ExpressionData::Identifier(identifier),
+                                ..
+                            } => identifier,
+
+                            _ => {
+                                return parser_error!(
+                                    right.line,
+                                    "Field should be an identifier"
+                                );
+                            }
+                        };
+
+                        expression!(
+                            FieldAccess {
+                                expression: Box::new(left.clone()),
+                                field
                             },
                             left.line
                         )
@@ -288,6 +340,8 @@ fn infix_binding_power(op: &TokenData) -> Option<(u8, u8)> {
         | TokenData::GreaterThanOrEqual => Some((10, 11)),
 
         TokenData::Equals => Some((0, 1)),
+
+        TokenData::Dot => Some((50, 51)),
 
         _ => None,
     }

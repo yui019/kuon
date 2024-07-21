@@ -1,5 +1,7 @@
 use crate::{
-    analyzer::{analyzer_error::AnalyzerError, env::Environment},
+    analyzer::{
+        analyzer_error::AnalyzerError, env::Environment, util::types_equal,
+    },
     analyzer_error,
     parser::{expression::Expression, r#type::Type},
 };
@@ -30,7 +32,7 @@ pub fn validate_if_condition(
     let true_type = validate_and_get_type(&true_branch, env)?;
     let else_type = validate_and_get_type(&else_branch, env)?;
 
-    if true_type != else_type {
+    if !types_equal(env, &true_type, &else_type) {
         return analyzer_error!(
             line,
             "The true and else branch must have the same type"

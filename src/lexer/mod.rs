@@ -516,6 +516,15 @@ impl<'a> Iterator for Lexer<'a> {
             'm' => {
                 let (next, _) = self.collect_while(|c| c.is_alphabetic());
 
+                if next == "kstruct" {
+                    self.skip_chars(7);
+
+                    return Some(Token {
+                        data: TokenData::MkStruct,
+                        line: self.current_line,
+                    });
+                }
+
                 if next == "atch" {
                     self.skip_chars(4);
 

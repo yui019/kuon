@@ -1,5 +1,7 @@
 use crate::{
-    analyzer::{analyzer_error::AnalyzerError, env::Environment},
+    analyzer::{
+        analyzer_error::AnalyzerError, env::Environment, util::types_equal,
+    },
     analyzer_error,
     parser::{expression::Expression, r#type::Type},
 };
@@ -31,7 +33,11 @@ pub fn validate_variable_definition(
     }
 
     if let Some(type_) = type_ {
-        if **type_ != validate_and_get_type(&value, env)? {
+        if !types_equal(
+            &env.clone(),
+            type_,
+            &validate_and_get_type(&value, env)?,
+        ) {
             return analyzer_error!(
                 value.line,
                 "Cannot cast value {:?} to type {:?}",

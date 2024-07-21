@@ -1,5 +1,7 @@
 use crate::{
-    compiler::{chunk::Chunk, operation::Operation, value::Value},
+    compiler::{
+        chunk::Chunk, compile_expression, operation::Operation, value::Value,
+    },
     expression_pat,
     parser::expression::{Expression, ExpressionData},
 };
@@ -62,6 +64,24 @@ pub fn compile_value(
             )?;
 
             chunk.add_operation(&Operation::Push(Value::Function(index)))
+        }
+
+        expression_pat!(MakeStruct { fields, .. }) => {
+            for (name, value) in fields {
+                chunk.add_operation(&Operation::Push(Value::String(
+                    name.clone(),
+                )));
+
+                compile_expression(chunk, value, is_function)?;
+            }
+
+            chunk.add_operation(&Operation::MakeStruct(fields.len()));
+        }
+
+        expression_pat!(FieldAccess { expression, field }) => {
+            compile_expression(chunk, expression, is_function)?;
+
+            chunk.add_operation(&Operation::AccessField(field.clone()));
         }
 
         _ => unreachable!(),

@@ -1,5 +1,7 @@
 use crate::{
-    analyzer::{analyzer_error::AnalyzerError, env::Environment},
+    analyzer::{
+        analyzer_error::AnalyzerError, env::Environment, util::types_equal,
+    },
     analyzer_error,
     lexer::token::TokenData,
     parser::{expression::Expression, r#type::Type},
@@ -75,7 +77,7 @@ pub fn validate_infix(
         let left_type = validate_and_get_type(left, env)?;
         let right_type = validate_and_get_type(right, env)?;
 
-        if left_type == right_type {
+        if types_equal(env, &left_type, &right_type) {
             return Ok(Type::Bool);
         } else {
             return analyzer_error!(

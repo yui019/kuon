@@ -83,3 +83,27 @@ fn test6() {
     ";
     assert_eq!(eval(source), Value::Int(120));
 }
+
+#[test]
+fn test7() {
+    let source = "
+    struct Person {
+	    name string
+	    age int
+    }
+
+    fun makePerson1(name string, age int) Person {
+	    Person { name: name, age: age }
+    }
+
+    fun makePerson2(name string, age int) struct { name string, age int } {
+	    mkstruct { name: name, age: age }
+    }
+
+    val kuon1 = makePerson1(\"Kuon\", 20);
+    val kuon2 = makePerson2(\"Kuon\", 20);
+
+    kuon1.age + kuon2.age
+    ";
+    assert_eq!(eval(source), Value::Int(40));
+}

@@ -1,5 +1,5 @@
 use crate::{
-    expression,
+    expression, expression_pat,
     lexer::{
         token::{Token, TokenData},
         Lexer,
@@ -36,14 +36,19 @@ pub fn parse_block(
 
         if matches!(
             expression,
-            Expression {
-                data: ExpressionData::FunctionDefinition { .. },
-                ..
-            }
+            expression_pat!(ExpressionData::FunctionDefinition { .. })
         ) {
             return parser_error!(
                 first_token.unwrap().line,
                 "Standalone function definitions aren't allowed below top-level"
+            );
+        } else if matches!(
+            expression,
+            expression_pat!(ExpressionData::StructDefinition { .. })
+        ) {
+            return parser_error!(
+                first_token.unwrap().line,
+                "Standalone struct definitions aren't allowed below top-level"
             );
         }
 

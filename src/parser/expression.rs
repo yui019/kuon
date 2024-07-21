@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use crate::lexer::token::TokenData;
 
 use super::r#type::Type;
@@ -64,9 +66,24 @@ pub enum ExpressionData {
         body: Box<Expression>,
     },
 
+    StructDefinition {
+        name: Option<String>,
+        fields: HashMap<String, Type>,
+    },
+
+    MakeStruct {
+        name: Option<String>,
+        fields: HashMap<String, Expression>,
+    },
+
     FunctionCall {
         function: Box<Expression>,
         arguments: Vec<Expression>,
+    },
+
+    FieldAccess {
+        expression: Box<Expression>,
+        field: String,
     },
 
     Type {

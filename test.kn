@@ -1,9 +1,16 @@
-fun factorial(n int) int {
-	if n == 1 {
-		1
-	} else {
-		n * factorial(n - 1)
-	}
+struct Person {
+	name string
+	age int
 }
 
-factorial(5)
+fun makePerson1(name string, age int) Person {
+	Person { name: name, age: age }
+}
+
+fun makePerson2(name string, age int) struct { name string, age int } {
+	mkstruct { name: name, age: age }
+}
+
+val kuon1 = makePerson1("Kuon", 20);
+val kuon2 = makePerson2("Kuon", 20);
+kuon1.age + kuon2.age

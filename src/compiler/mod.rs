@@ -56,7 +56,9 @@ fn compile_expression(
         | ExpressionData::Bool(_)
         | ExpressionData::Identifier(_)
         // function definitions without names are closures, so they are handled like all values
-        | ExpressionData::FunctionDefinition { name: None, .. }, ..} => {
+        | ExpressionData::FunctionDefinition { name: None, .. }
+        | ExpressionData::MakeStruct { .. }
+        | ExpressionData::FieldAccess { .. }, ..} => {
             compile_value(chunk, is_function, value)?
         }
 
@@ -100,6 +102,8 @@ fn compile_expression(
             ()
         }
 
+        expression_pat!(ExpressionData::StructDefinition { .. }) => {}
+        
         expression_pat!(FunctionCall { function, arguments }) => compile_function_call(chunk, is_function, function, arguments)?,
 
         // this should be unreachable unless I seriously mess something up

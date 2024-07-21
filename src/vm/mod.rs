@@ -133,6 +133,44 @@ fn execute_chunk(
                 stack.push(return_value);
             }
 
+            Operation::MakeStruct(field_count) => {
+                let mut fields: HashMap<String, Value> = HashMap::new();
+                for _ in 0..field_count {
+                    let value = match stack.pop() {
+                        Some(v) => v,
+                        None => panic!("Expected Value"),
+                    };
+
+                    let name = match stack.pop() {
+                        Some(Value::String(s)) => s,
+
+                        _ => panic!(
+                            "Expected a Value::String with the field name"
+                        ),
+                    };
+
+                    fields.insert(name, value);
+                }
+
+                stack.push(Value::Struct(fields));
+            }
+
+            Operation::AccessField(name) => {
+                let fields = match stack.pop() {
+                    Some(Value::Struct(f)) => f,
+
+                    _ => panic!("Expected Value::Struct"),
+                };
+
+                let value = match fields.get(&name) {
+                    Some(v) => v,
+
+                    None => panic!("Field {} does not exist", name),
+                };
+
+                stack.push(value.clone());
+            }
+
             Operation::Halt => return stack.pop().unwrap_or(Value::Null),
         }
 

@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use crate::parser::r#type::Type;
 
 #[derive(Debug, Clone)]
@@ -15,11 +17,18 @@ pub struct EnvironmentFunction {
 }
 
 #[derive(Debug, Clone)]
+pub struct EnvironmentStruct {
+    pub name: String,
+    pub fields: HashMap<String, Type>,
+}
+
+#[derive(Debug, Clone)]
 pub struct Environment<'a> {
     pub parent_env: Option<&'a Environment<'a>>,
 
     pub variables: Vec<EnvironmentVariable>,
     pub functions: Vec<EnvironmentFunction>,
+    pub structs: Vec<EnvironmentStruct>,
     // TODO: add struct definitions, etc.
 }
 
@@ -29,6 +38,7 @@ impl<'a> Environment<'a> {
             parent_env: None,
             variables: vec![],
             functions: vec![],
+            structs: vec![],
         }
     }
 
@@ -42,6 +52,9 @@ impl<'a> Environment<'a> {
             // environment because otherwise you would need to go up
             // and up to the top level one for every function call
             functions: parent_env.functions.clone(),
+
+            // same goes for structs
+            structs: parent_env.structs.clone(),
         }
     }
 
@@ -68,6 +81,16 @@ impl<'a> Environment<'a> {
         return None;
     }
 
+    pub fn get_struct(&self, name: &str) -> Option<EnvironmentStruct> {
+        for struct_ in &self.structs {
+            if struct_.name == name {
+                return Some(struct_.clone());
+            }
+        }
+
+        return None;
+    }
+
     pub fn add_variable(&mut self, name: String, type_: Type, constant: bool) {
         self.variables.push(EnvironmentVariable {
             name,
@@ -87,5 +110,9 @@ impl<'a> Environment<'a> {
             param_types,
             return_type,
         })
+    }
+
+    pub fn add_struct(&mut self, name: String, fields: HashMap<String, Type>) {
+        self.structs.push(EnvironmentStruct { name, fields })
     }
 }

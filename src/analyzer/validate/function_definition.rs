@@ -1,5 +1,7 @@
 use crate::{
-    analyzer::{analyzer_error::AnalyzerError, env::Environment},
+    analyzer::{
+        analyzer_error::AnalyzerError, env::Environment, util::types_equal,
+    },
     analyzer_error,
     parser::{
         expression::{Expression, FunctionParam},
@@ -53,7 +55,7 @@ pub fn validate_function_definition(
     }
     let body_type = validate_and_get_type(&body, &mut body_env)?;
 
-    if body_type != *return_type {
+    if !types_equal(env, &body_type, return_type) {
         return analyzer_error!(
             body.line,
             "Function should return {:?}, but it returns {:?}",
