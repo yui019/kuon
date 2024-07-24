@@ -1,6 +1,9 @@
 use crate::{
     compiler::{
-        chunk::Chunk, compile_expression, operation::Operation, value::Value,
+        chunk::Chunk,
+        compile_expression,
+        operation::Operation,
+        value::{ObjectValue, Value},
     },
     expression_pat,
     parser::expression::{Expression, ExpressionData},
@@ -19,9 +22,9 @@ pub fn compile_value(
         expression_pat!(Null) => {
             chunk.add_operation(&Operation::Push(Value::Null))
         }
-        expression_pat!(ExpressionData::String(v)) => {
-            chunk.add_operation(&Operation::Push(Value::String(v.clone())))
-        }
+        expression_pat!(ExpressionData::String(v)) => chunk.add_operation(
+            &Operation::Push(Value::Object(ObjectValue::String(v.clone()))),
+        ),
         expression_pat!(Char(v)) => {
             chunk.add_operation(&Operation::Push(Value::Char(v.clone())))
         }
@@ -68,7 +71,7 @@ pub fn compile_value(
 
         expression_pat!(MakeStruct { fields, .. }) => {
             for (name, value) in fields {
-                chunk.add_operation(&Operation::Push(Value::String(
+                chunk.add_operation(&Operation::Push(Value::StructFieldName(
                     name.clone(),
                 )));
 

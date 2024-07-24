@@ -142,10 +142,10 @@ fn execute_chunk(
                     };
 
                     let name = match stack.pop() {
-                        Some(Value::String(s)) => s,
+                        Some(Value::StructFieldName(s)) => s,
 
                         _ => panic!(
-                            "Expected a Value::String with the field name"
+                            "Expected a Value::StructFieldName with the field name"
                         ),
                     };
 

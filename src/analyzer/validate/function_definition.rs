@@ -45,7 +45,7 @@ pub fn validate_function_definition(
 
     // add function params to its environment before validating its body
     for param in params {
-        let constant = true;
+        let constant = false;
 
         body_env.add_variable(
             param.name.clone(),

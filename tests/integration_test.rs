@@ -1,6 +1,9 @@
 use kuon::{
     analyzer,
-    compiler::{self, value::Value},
+    compiler::{
+        self,
+        value::{ObjectValue, Value},
+    },
     lexer::Lexer,
     parser, vm,
 };
@@ -53,7 +56,10 @@ fn test4() {
         \"def\"
     }
     ";
-    assert_eq!(eval(source), Value::String("def".to_string()));
+    assert_eq!(
+        eval(source),
+        Value::Object(ObjectValue::String("def".to_string()))
+    );
 }
 
 #[test]
