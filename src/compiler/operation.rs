@@ -53,11 +53,11 @@ pub enum Operation {
     // Pop all struct fields from the stack and push a Value::Struct. The
     // given number is the number of fields in the struct.
     // Example:
-    // - Push Value::String("field1")
+    // - Push Value::StructFieldName("field1")
     // - Push Value::Int(123)
-    // - Push Value::String("field2")
+    // - Push Value::StructFieldName("field2")
     // - Push Value::Int(456)
-    // - Push Value::String("field3")
+    // - Push Value::StructFieldName("field3")
     // - Push Value::Int(789)
     // - MakeStruct(3)
     // This will pop all the 6 values that have been pushed to the stack and

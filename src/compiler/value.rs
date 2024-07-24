@@ -30,7 +30,7 @@ pub enum Value {
     // and repeat that process with the same field (so I get: push
     // string(field1), push value, push string(field2), push value, etc.). And
     // pushing regular String objects would be bad since they're garbage
-    // collected, so I made this instead.
+    // collected, so I switched to this instead.
     // (please don't hate me, I promise I'll improve on this)
     StructFieldName(String),
 }
