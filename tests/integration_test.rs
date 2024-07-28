@@ -115,3 +115,36 @@ fn test7() {
     ";
     assert_eq!(eval(source), ExecuteResult::Value(Value::Int(40)));
 }
+
+#[test]
+fn test8() {
+    let source = "
+    fun modifyStr(var s string) null {
+        s = \"def\";
+    }
+
+    var a = \"abc\";
+    modifyStr(a);
+    a;
+    ";
+
+    assert_eq!(
+        eval(source),
+        ExecuteResult::Object(Object::String("def".to_string()))
+    );
+}
+
+#[test]
+fn test9() {
+    let source = "
+    fun modifyInt(var n int) null {
+        n = 2;
+    }
+
+    var a = 1;
+    modifyInt(a);
+    a;
+    ";
+
+    assert_eq!(eval(source), ExecuteResult::Value(Value::Int(2)));
+}
