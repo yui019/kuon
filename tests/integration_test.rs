@@ -29,34 +29,34 @@ fn test1() {
 
 #[test]
 fn test2() {
-    let source = "
+    let source = r#"
     1 + 2;
     2 + 3
-    ";
+    "#;
     assert_eq!(eval(source), ExecuteResult::Value(Value::Int(5)));
 }
 
 #[test]
 fn test3() {
-    let source = "
+    let source = r#"
     val a = 3;
     val b = 4;
     a + b
-    ";
+    "#;
     assert_eq!(eval(source), ExecuteResult::Value(Value::Int(7)));
 }
 
 #[test]
 fn test4() {
-    let source = "
+    let source = r#"
     val a = 3;
     val b = 4;
     if a > b {
-        \"abc\"
+        "abc"
     } else {
-        \"def\"
+        "def"
     }
-    ";
+    "#;
 
     assert_eq!(
         eval(source),
@@ -66,19 +66,19 @@ fn test4() {
 
 #[test]
 fn test5() {
-    let source = "
+    let source = r#"
     fun add(a int, b float) float {
         a + b
     }
 
     add(3, 2.5)
-    ";
+    "#;
     assert_eq!(eval(source), ExecuteResult::Value(Value::Float(5.5)));
 }
 
 #[test]
 fn test6() {
-    let source = "
+    let source = r#"
     fun factorial(n int) int {
     	if n == 1 {
 	    	1
@@ -88,13 +88,13 @@ fn test6() {
     }
 
     factorial(5)
-    ";
+    "#;
     assert_eq!(eval(source), ExecuteResult::Value(Value::Int(120)));
 }
 
 #[test]
 fn test7() {
-    let source = "
+    let source = r#"
     struct Person {
 	    name string
 	    age int
@@ -108,25 +108,25 @@ fn test7() {
 	    mkstruct { name: name, age: age }
     }
 
-    val kuon1 = makePerson1(\"Kuon\", 20);
-    val kuon2 = makePerson2(\"Kuon\", 20);
+    val kuon1 = makePerson1("Kuon", 20);
+    val kuon2 = makePerson2("Kuon", 20);
 
     kuon1.age + kuon2.age
-    ";
+    "#;
     assert_eq!(eval(source), ExecuteResult::Value(Value::Int(40)));
 }
 
 #[test]
 fn test8() {
-    let source = "
+    let source = r#"
     fun modifyStr(var s string) null {
-        s = \"def\";
+        s = "def";
     }
 
-    var a = \"abc\";
+    var a = "abc";
     modifyStr(a);
     a;
-    ";
+    "#;
 
     assert_eq!(
         eval(source),
@@ -136,7 +136,7 @@ fn test8() {
 
 #[test]
 fn test9() {
-    let source = "
+    let source = r#"
     fun modifyInt(var n int) null {
         n = 2;
     }
@@ -144,7 +144,7 @@ fn test9() {
     var a = 1;
     modifyInt(a);
     a;
-    ";
+    "#;
 
     assert_eq!(eval(source), ExecuteResult::Value(Value::Int(2)));
 }
