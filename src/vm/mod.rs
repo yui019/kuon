@@ -40,7 +40,6 @@ pub fn execute(chunk: &Chunk) -> ExecuteResult {
     let mut heap = VmHeap::new();
 
     let value = execute_chunk(chunk, &mut heap, None, &vec![]);
-    println!("{:?}", heap);
 
     match value {
         Value::ObjectRef(index) => {
