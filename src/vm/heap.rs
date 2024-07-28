@@ -17,7 +17,7 @@ impl VmHeap {
         return self.objects.len() - 1;
     }
 
-    pub fn get_object(&mut self, index: usize) -> Object {
+    pub fn get_object(&self, index: usize) -> Object {
         self.objects[index].clone()
     }
 

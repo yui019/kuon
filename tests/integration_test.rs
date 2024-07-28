@@ -1,15 +1,12 @@
 use kuon::{
     analyzer,
-    compiler::{
-        self,
-        value::{Object, Value},
-    },
+    compiler::{self},
     lexer::Lexer,
     parser,
-    vm::{self, ExecuteResult},
+    vm::{self, execution_result::ExecutionResult},
 };
 
-fn eval(code: &str) -> ExecuteResult {
+fn eval(code: &str) -> ExecutionResult {
     let code_str = code.to_string();
     let mut lexer = Lexer::from_string(&code_str);
 
@@ -24,7 +21,7 @@ fn eval(code: &str) -> ExecuteResult {
 #[test]
 fn test1() {
     let source = "1 + 2";
-    assert_eq!(eval(source), ExecuteResult::Value(Value::Int(3)));
+    assert_eq!(eval(source), ExecutionResult::Int(3));
 }
 
 #[test]
@@ -33,7 +30,7 @@ fn test2() {
     1 + 2;
     2 + 3
     "#;
-    assert_eq!(eval(source), ExecuteResult::Value(Value::Int(5)));
+    assert_eq!(eval(source), ExecutionResult::Int(5));
 }
 
 #[test]
@@ -43,7 +40,7 @@ fn test3() {
     val b = 4;
     a + b
     "#;
-    assert_eq!(eval(source), ExecuteResult::Value(Value::Int(7)));
+    assert_eq!(eval(source), ExecutionResult::Int(7));
 }
 
 #[test]
@@ -58,10 +55,7 @@ fn test4() {
     }
     "#;
 
-    assert_eq!(
-        eval(source),
-        ExecuteResult::Object(Object::String("def".to_string()))
-    );
+    assert_eq!(eval(source), ExecutionResult::String("def".to_string()));
 }
 
 #[test]
@@ -73,7 +67,7 @@ fn test5() {
 
     add(3, 2.5)
     "#;
-    assert_eq!(eval(source), ExecuteResult::Value(Value::Float(5.5)));
+    assert_eq!(eval(source), ExecutionResult::Float(5.5));
 }
 
 #[test]
@@ -89,7 +83,7 @@ fn test6() {
 
     factorial(5)
     "#;
-    assert_eq!(eval(source), ExecuteResult::Value(Value::Int(120)));
+    assert_eq!(eval(source), ExecutionResult::Int(120));
 }
 
 #[test]
@@ -113,7 +107,7 @@ fn test7() {
 
     kuon1.age + kuon2.age
     "#;
-    assert_eq!(eval(source), ExecuteResult::Value(Value::Int(40)));
+    assert_eq!(eval(source), ExecutionResult::Int(40));
 }
 
 #[test]
@@ -128,10 +122,7 @@ fn test8() {
     a;
     "#;
 
-    assert_eq!(
-        eval(source),
-        ExecuteResult::Object(Object::String("def".to_string()))
-    );
+    assert_eq!(eval(source), ExecutionResult::String("def".to_string()));
 }
 
 #[test]
@@ -146,5 +137,5 @@ fn test9() {
     a;
     "#;
 
-    assert_eq!(eval(source), ExecuteResult::Value(Value::Int(2)));
+    assert_eq!(eval(source), ExecutionResult::Int(2));
 }

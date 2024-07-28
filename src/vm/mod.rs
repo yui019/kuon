@@ -1,5 +1,6 @@
 use std::collections::HashMap;
 
+use execution_result::ExecutionResult;
 use heap::VmHeap;
 use util::{
     add, divide, equal, greater_than, greater_than_or_equal, is_true,
@@ -12,6 +13,7 @@ use crate::compiler::{
     value::{Object, Value},
 };
 
+pub mod execution_result;
 mod heap;
 mod util;
 
@@ -30,26 +32,12 @@ impl StackValueWrapper {
     }
 }
 
-#[derive(Debug, Clone, PartialEq)]
-pub enum ExecuteResult {
-    Value(Value),
-    Object(Object),
-}
-
-pub fn execute(chunk: &Chunk) -> ExecuteResult {
+pub fn execute(chunk: &Chunk) -> ExecutionResult {
     let mut heap = VmHeap::new();
 
     let value = execute_chunk(chunk, &mut heap, None, &vec![]);
 
-    // TODO: handle structs containing object refs here (and other future types
-    // like arrays)
-    match value {
-        Value::ObjectRef(index) => {
-            ExecuteResult::Object(heap.get_object(index))
-        }
-
-        v => ExecuteResult::Value(v),
-    }
+    ExecutionResult::from_value(chunk, &heap, value)
 }
 
 /// If function is Some, the function with that index in the chunk will be
