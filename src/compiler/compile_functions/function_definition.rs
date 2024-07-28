@@ -1,6 +1,6 @@
 use crate::{
     compiler::{
-        chunk::{Chunk, ChunkFunction},
+        chunk::{Chunk, ChunkFunction, ChunkFunctionParam},
         compile_expression,
         operation::Operation,
     },
@@ -17,9 +17,15 @@ pub fn compile_function_definition(
 ) -> Result<usize, String> {
     let mut function_chunk = Chunk::new();
 
-    // store all params from the stack into variables
+    let mut chunk_function_params: Vec<ChunkFunctionParam> = vec![];
+
     for param in params {
-        function_chunk.add_operation(&Operation::Store(param.name.clone()))
+        // store all params from the stack into variables
+        function_chunk.add_operation(&Operation::Store(param.name.clone()));
+
+        chunk_function_params.push(ChunkFunctionParam {
+            constant: param.constant,
+        });
     }
 
     // Index of this function once it's been added to the chunk (calculated in
@@ -47,7 +53,7 @@ pub fn compile_function_definition(
     // add function to the chunk
     chunk.functions.push(ChunkFunction {
         chunk: function_chunk,
-        parameter_count: params.len() as u32,
+        parameters: chunk_function_params,
     });
 
     Ok(index)

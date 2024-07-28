@@ -3,9 +3,14 @@ use std::collections::HashMap;
 use super::operation::Operation;
 
 #[derive(Debug, Clone)]
+pub struct ChunkFunctionParam {
+    pub constant: bool,
+}
+
+#[derive(Debug, Clone)]
 pub struct ChunkFunction {
     pub chunk: Chunk,
-    pub parameter_count: u32,
+    pub parameters: Vec<ChunkFunctionParam>,
 }
 
 #[derive(Debug, Clone)]

@@ -8,6 +8,7 @@ use super::r#type::Type;
 pub struct FunctionParam {
     pub name: String,
     pub type_: Type,
+    pub constant: bool,
 }
 
 #[derive(Debug, Clone)]

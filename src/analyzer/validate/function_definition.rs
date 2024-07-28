@@ -45,12 +45,10 @@ pub fn validate_function_definition(
 
     // add function params to its environment before validating its body
     for param in params {
-        let constant = false;
-
         body_env.add_variable(
             param.name.clone(),
             param.type_.clone(),
-            constant,
+            param.constant,
         );
     }
     let body_type = validate_and_get_type(&body, &mut body_env)?;

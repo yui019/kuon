@@ -1,8 +1,12 @@
 use std::collections::HashMap;
 
 #[derive(Debug, Clone, PartialEq)]
-pub enum ObjectValue {
+pub enum Object {
     String(String),
+
+    // this is for when you want to pass a type like an int by reference in a
+    // function
+    Value(Value),
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -13,7 +17,8 @@ pub enum Value {
     Float(f64),
     Bool(bool),
 
-    Object(ObjectValue),
+    // this is a reference to an object that's stored in the VM's heap
+    ObjectRef(usize),
 
     // the usize parameter is an index into the functions Vec field of the
     // Chunk struct

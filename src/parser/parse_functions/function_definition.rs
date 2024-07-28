@@ -19,6 +19,16 @@ pub fn parse_params(
     let mut params: Vec<FunctionParam> = vec![];
 
     loop {
+        // determine if parameter is constant based on the optional val/var
+        let constant = if matches!(
+            &lexer.peek(),
+            some_token_pat!(TokenData::Val | TokenData::Var)
+        ) {
+            matches!(&lexer.next(), some_token_pat!(TokenData::Val))
+        } else {
+            true
+        };
+
         let next = lexer.next();
 
         if token_matches(&next, &TokenData::RightParenNormal) {
@@ -30,7 +40,11 @@ pub fn parse_params(
                 let name = identifier;
                 let type_ = parse_type(lexer)?;
 
-                params.push(FunctionParam { name, type_ });
+                params.push(FunctionParam {
+                    name,
+                    type_,
+                    constant,
+                });
 
                 match lexer.next() {
                     some_token_pat!(TokenData::Comma) => {}

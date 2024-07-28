@@ -29,7 +29,6 @@ pub struct Environment<'a> {
     pub variables: Vec<EnvironmentVariable>,
     pub functions: Vec<EnvironmentFunction>,
     pub structs: Vec<EnvironmentStruct>,
-    // TODO: add struct definitions, etc.
 }
 
 impl<'a> Environment<'a> {

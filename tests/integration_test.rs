@@ -2,13 +2,14 @@ use kuon::{
     analyzer,
     compiler::{
         self,
-        value::{ObjectValue, Value},
+        value::{Object, Value},
     },
     lexer::Lexer,
-    parser, vm,
+    parser,
+    vm::{self, ExecuteResult},
 };
 
-fn eval(code: &str) -> Value {
+fn eval(code: &str) -> ExecuteResult {
     let code_str = code.to_string();
     let mut lexer = Lexer::from_string(&code_str);
 
@@ -23,7 +24,7 @@ fn eval(code: &str) -> Value {
 #[test]
 fn test1() {
     let source = "1 + 2";
-    assert_eq!(eval(source), Value::Int(3));
+    assert_eq!(eval(source), ExecuteResult::Value(Value::Int(3)));
 }
 
 #[test]
@@ -32,7 +33,7 @@ fn test2() {
     1 + 2;
     2 + 3
     ";
-    assert_eq!(eval(source), Value::Int(5));
+    assert_eq!(eval(source), ExecuteResult::Value(Value::Int(5)));
 }
 
 #[test]
@@ -42,7 +43,7 @@ fn test3() {
     val b = 4;
     a + b
     ";
-    assert_eq!(eval(source), Value::Int(7));
+    assert_eq!(eval(source), ExecuteResult::Value(Value::Int(7)));
 }
 
 #[test]
@@ -56,9 +57,10 @@ fn test4() {
         \"def\"
     }
     ";
+
     assert_eq!(
         eval(source),
-        Value::Object(ObjectValue::String("def".to_string()))
+        ExecuteResult::Object(Object::String("def".to_string()))
     );
 }
 
@@ -71,7 +73,7 @@ fn test5() {
 
     add(3, 2.5)
     ";
-    assert_eq!(eval(source), Value::Float(5.5));
+    assert_eq!(eval(source), ExecuteResult::Value(Value::Float(5.5)));
 }
 
 #[test]
@@ -87,7 +89,7 @@ fn test6() {
 
     factorial(5)
     ";
-    assert_eq!(eval(source), Value::Int(120));
+    assert_eq!(eval(source), ExecuteResult::Value(Value::Int(120)));
 }
 
 #[test]
@@ -111,5 +113,5 @@ fn test7() {
 
     kuon1.age + kuon2.age
     ";
-    assert_eq!(eval(source), Value::Int(40));
+    assert_eq!(eval(source), ExecuteResult::Value(Value::Int(40)));
 }

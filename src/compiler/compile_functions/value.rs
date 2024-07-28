@@ -3,7 +3,7 @@ use crate::{
         chunk::Chunk,
         compile_expression,
         operation::Operation,
-        value::{ObjectValue, Value},
+        value::{Object, Value},
     },
     expression_pat,
     parser::expression::{Expression, ExpressionData},
@@ -22,9 +22,8 @@ pub fn compile_value(
         expression_pat!(Null) => {
             chunk.add_operation(&Operation::Push(Value::Null))
         }
-        expression_pat!(ExpressionData::String(v)) => chunk.add_operation(
-            &Operation::Push(Value::Object(ObjectValue::String(v.clone()))),
-        ),
+        expression_pat!(ExpressionData::String(v)) => chunk
+            .add_operation(&Operation::PushObject(Object::String(v.clone()))),
         expression_pat!(Char(v)) => {
             chunk.add_operation(&Operation::Push(Value::Char(v.clone())))
         }

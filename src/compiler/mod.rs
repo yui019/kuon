@@ -23,7 +23,6 @@ pub fn compile_source(ast: &Expression) -> Result<Chunk, String> {
     let mut chunk = Chunk::new();
 
     if let expression_pat!(ExpressionData::Block { expressions }) = ast {
-        // TODO: handle top level function definitions specially here
         for expression in expressions {
             compile_expression(&mut chunk, expression, false)?;
         }

@@ -1,16 +1,11 @@
-struct Person {
-	name string
-	age int
+fun modifyStr(var s string) null {
+	s = "def";
 }
 
-fun makePerson1(name string, age int) Person {
-	Person { name: name, age: age }
+fun modifyInt(var n int) null {
+	n = 2;
 }
 
-fun makePerson2(name string, age int) struct { name string, age int } {
-	mkstruct { name: name, age: age }
-}
-
-val kuon1 = makePerson1("Kuon", 20);
-val kuon2 = makePerson2("Kuon", 20);
-kuon1.age + kuon2.age
+var a = "abc";
+modifyStr(a);
+a;

@@ -1,4 +1,4 @@
-use super::value::Value;
+use super::value::{Object, Value};
 
 #[derive(Debug, Clone)]
 pub enum Operation {
@@ -6,6 +6,10 @@ pub enum Operation {
     Push(Value),
     // pop 1 value from the stack
     Pop,
+
+    // push object to the stack, this will create the object in the heap and
+    // push a Value::ObjectRef to the stack
+    PushObject(Object),
 
     // pop 1 value from the stack and store it in a variable with the given
     // name
