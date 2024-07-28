@@ -41,6 +41,8 @@ pub fn execute(chunk: &Chunk) -> ExecuteResult {
 
     let value = execute_chunk(chunk, &mut heap, None, &vec![]);
 
+    // TODO: handle structs containing object refs here (and other future types
+    // like arrays)
     match value {
         Value::ObjectRef(index) => {
             ExecuteResult::Object(heap.get_object(index))
