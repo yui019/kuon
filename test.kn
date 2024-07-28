@@ -1,11 +1,19 @@
-fun modifyStr(var s string) null {
-	s = "def";
+struct Person {
+	name string,
+	age int
 }
 
-fun modifyInt(var n int) null {
-	n = 2;
+fun modifyPerson(var p Person) null {
+	p = Person {
+		name: "Kuon",
+		age: 20
+	};
 }
 
-var a = "abc";
-modifyStr(a);
-a;
+val kuon = Person {
+	name: "idk",
+	age: 1
+};
+
+modifyPerson(kuon);
+kuon

@@ -339,7 +339,7 @@ fn infix_binding_power(op: &TokenData) -> Option<(u8, u8)> {
         | TokenData::GreaterThan
         | TokenData::GreaterThanOrEqual => Some((10, 11)),
 
-        TokenData::Equals => Some((0, 1)),
+        TokenData::Equals => Some((0, 0)),
 
         TokenData::Dot => Some((50, 51)),
 
