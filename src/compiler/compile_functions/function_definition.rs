@@ -21,12 +21,17 @@ pub fn compile_function_definition(
 
     for param in params {
         // store all params from the stack into variables
-        function_chunk.add_operation(&Operation::Store(param.name.clone()));
+        function_chunk.add_operation(&Operation::Store {
+            name: param.name.clone(),
+            accessors: vec![],
+        });
 
         chunk_function_params.push(ChunkFunctionParam {
             constant: param.constant,
         });
     }
+
+    chunk_function_params.reverse();
 
     // Index of this function once it's been added to the chunk (calculated in
     // advance)
@@ -44,6 +49,11 @@ pub fn compile_function_definition(
         // would be making some sort of special operation for a function to call
         // itself)
         function_chunk.function_index_from_name.insert(name, index);
+
+        // also add all the other function indexes to the function's chunk
+        for (name, index) in chunk.function_index_from_name.clone() {
+            function_chunk.function_index_from_name.insert(name, index);
+        }
     }
 
     // compile function body

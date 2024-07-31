@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use kuon::{
     analyzer,
     compiler::{self},
@@ -138,4 +140,73 @@ fn test9() {
     "#;
 
     assert_eq!(eval(source), ExecutionResult::Int(2));
+}
+
+#[test]
+fn test10() {
+    let source = r#"
+    struct PersonAge {
+        years int,
+        months int,
+        important_field string
+    }
+
+    struct Person {
+        name string,
+        age PersonAge
+    }
+
+    fun modifyInt(var n int, newValue int) null {
+        n = newValue;
+    }
+
+    fun modifyPersonAge(var a PersonAge) null {
+        a.important_field = "abc";
+        modifyInt(a.years, 15);
+    }
+
+    fun modifyPerson(var p Person) null {
+        p.name = "kuon";
+        modifyPersonAge(p.age);
+        modifyInt(p.age.months, 8);
+    }
+
+    var p1 = Person {
+        name: "idk",
+        age: mkstruct {
+            years: 2,
+            months: 3,
+            important_field: "idk"
+        }
+    };
+
+    modifyPerson(p1);
+
+    p1
+    "#;
+
+    assert_eq!(
+        eval(source),
+        ExecutionResult::Struct {
+            fields: HashMap::from([
+                (
+                    "name".to_string(),
+                    ExecutionResult::String("kuon".to_string())
+                ),
+                (
+                    "age".to_string(),
+                    ExecutionResult::Struct {
+                        fields: HashMap::from([
+                            (
+                                "important_field".to_string(),
+                                ExecutionResult::String("abc".to_string())
+                            ),
+                            ("months".to_string(), ExecutionResult::Int(8)),
+                            ("years".to_string(), ExecutionResult::Int(15))
+                        ])
+                    }
+                )
+            ])
+        }
+    );
 }

@@ -1,19 +1,38 @@
+struct PersonAge {
+    years int,
+    months int,
+    important_field string
+}
+
 struct Person {
-	name string,
-	age int
+    name string,
+    age PersonAge
+}
+
+fun modifyInt(var n int, newValue int) null {
+    n = newValue;
+}
+
+fun modifyPersonAge(var a PersonAge) null {
+    a.important_field = "abc";
+    modifyInt(a.years, 15);
 }
 
 fun modifyPerson(var p Person) null {
-	p = Person {
-		name: "Kuon",
-		age: 20
-	};
+    p.name = "kuon";
+    modifyPersonAge(p.age);
+    modifyInt(p.age.months, 8);
 }
 
-val kuon = Person {
-	name: "idk",
-	age: 1
+var p1 = Person {
+    name: "idk",
+    age: mkstruct {
+        years: 2,
+        months: 3,
+        important_field: "idk"
+    }
 };
 
-modifyPerson(kuon);
-kuon
+modifyPerson(p1);
+
+p1

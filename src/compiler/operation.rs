@@ -1,3 +1,5 @@
+use crate::parser::expression::VariableAccessor;
+
 use super::value::{Object, Value};
 
 #[derive(Debug, Clone)]
@@ -11,9 +13,17 @@ pub enum Operation {
     // push a Value::ObjectRef to the stack
     PushObject(Object),
 
-    // pop 1 value from the stack and store it in a variable with the given
-    // name
-    Store(String),
+    // Pop 1 value from the stack and store it in a variable with the given
+    // name (either creates the variable or overwrites its value).
+    // If accessors is not empty, they'll be traced one by one and the value
+    // will be stored in the final accessor's location (this of course only
+    // works if the variable already exists and is of the appropriate type
+    // that contains all the right accessors - this is ensured by the
+    // analyzer, same as everything else)
+    Store {
+        name: String,
+        accessors: Vec<VariableAccessor>,
+    },
     // load value of the varable with the given name and push it to the stack
     Load(String),
 

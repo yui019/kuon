@@ -90,8 +90,8 @@ fn compile_expression(
             compile_variable_definition(chunk, is_function, name, value)?
         }
 
-        expression_pat!(VariableAssignment { name, value }) => {
-            compile_variable_assignment(chunk, is_function, name, value)?
+        expression_pat!(VariableAssignment { name, accessors, value }) => {
+            compile_variable_assignment(chunk, is_function, name, accessors, value)?
         }
 
         expression_pat!(FunctionDefinition {

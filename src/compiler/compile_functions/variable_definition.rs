@@ -10,7 +10,10 @@ pub fn compile_variable_definition(
     value: &Expression,
 ) -> Result<(), String> {
     compile_expression(chunk, value, is_function)?;
-    chunk.add_operation(&Operation::Store(name.clone()));
+    chunk.add_operation(&Operation::Store {
+        name: name.clone(),
+        accessors: vec![],
+    });
 
     Ok(())
 }

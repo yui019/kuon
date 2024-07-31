@@ -99,9 +99,13 @@ pub fn validate_and_get_type(
         ),
 
         expression_pat!(
-            ExpressionData::VariableAssignment { name, value },
+            ExpressionData::VariableAssignment {
+                name,
+                accessors,
+                value
+            },
             line
-        ) => validate_variable_assignment(env, *line, name, value),
+        ) => validate_variable_assignment(env, *line, name, accessors, value),
 
         expression_pat!(
             ExpressionData::FunctionDefinition {

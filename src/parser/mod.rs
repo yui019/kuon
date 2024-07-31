@@ -1,4 +1,5 @@
 use expression::{Expression, ExpressionData};
+use parse_functions::create_variable_assignment::create_variable_assignment;
 use parse_functions::function_arguments::parse_function_arguments;
 use parse_functions::function_definition::parse_function_definition;
 use parse_functions::if_condition::parse_if_condition;
@@ -249,27 +250,7 @@ fn expr_binding_power(
                 left = match operator.data {
                     // variable assignment
                     TokenData::Equals => {
-                        let name = match left {
-                            Expression {
-                                data: ExpressionData::Identifier(identifier),
-                                ..
-                            } => identifier,
-
-                            _ => {
-                                return parser_error!(
-                                    left.line,
-                                    "Variable name should be an identifier"
-                                );
-                            }
-                        };
-
-                        expression!(
-                            VariableAssignment {
-                                name,
-                                value: Box::new(right),
-                            },
-                            left.line
-                        )
+                        create_variable_assignment(&left, &right)?
                     }
 
                     // Field access

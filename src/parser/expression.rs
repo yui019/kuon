@@ -11,6 +11,12 @@ pub struct FunctionParam {
     pub constant: bool,
 }
 
+#[derive(Debug, Clone, PartialEq)]
+pub enum VariableAccessor {
+    StructField(String),
+    // TODO: add array indexing
+}
+
 #[derive(Debug, Clone)]
 pub enum ExpressionData {
     Null,
@@ -57,6 +63,7 @@ pub enum ExpressionData {
 
     VariableAssignment {
         name: String,
+        accessors: Vec<VariableAccessor>,
         value: Box<Expression>,
     },
 
