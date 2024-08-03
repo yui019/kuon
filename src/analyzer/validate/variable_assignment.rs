@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::collections::BTreeMap;
 
 use crate::{
     analyzer::{
@@ -17,7 +17,7 @@ fn extract_struct_fields(
     env: &mut Environment,
     line: usize,
     type_: &Type,
-) -> Result<HashMap<String, Type>, AnalyzerError> {
+) -> Result<BTreeMap<String, Type>, AnalyzerError> {
     match type_ {
         Type::Struct { fields } => Ok(fields.clone()),
 
@@ -36,7 +36,7 @@ pub fn validate_variable_assignment(
     line: usize,
     name: &String,
     accessors: &Vec<VariableAccessor>,
-    value: &Expression,
+    value: &mut Expression,
 ) -> Result<Type, AnalyzerError> {
     let var = match env.get_variable(name) {
         None => {

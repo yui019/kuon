@@ -1,11 +1,6 @@
 use chunk::Chunk;
 use compile_functions::{
-    function_call::compile_function_call,
-    function_definition::compile_function_definition,
-    if_condition::compile_if_condition, infix::compile_infix,
-    prefix::compile_prefix, value::compile_value,
-    variable_assignment::compile_variable_assignment,
-    variable_definition::compile_variable_definition,
+    function_call::compile_function_call, function_definition::compile_function_definition, if_condition::compile_if_condition, infix::compile_infix, prefix::compile_prefix, value::compile_value, value_function_call::compile_value_function_call, variable_assignment::compile_variable_assignment, variable_definition::compile_variable_definition
 };
 use operation::Operation;
 
@@ -95,15 +90,17 @@ fn compile_expression(
         }
 
         expression_pat!(FunctionDefinition {
-            params, body, name, ..
+            params, body, name, pre_parameter, ..
         }) => {
-            compile_function_definition(chunk, is_function, params, body, name)?;
+            compile_function_definition(chunk, is_function, pre_parameter, params, body, name)?;
             ()
         }
 
         expression_pat!(ExpressionData::StructDefinition { .. }) => {}
         
         expression_pat!(FunctionCall { function, arguments }) => compile_function_call(chunk, is_function, function, arguments)?,
+
+        expression_pat!(ValueFunctionCall { pre_argument, function_name, arguments, pre_argument_type }) => compile_value_function_call(chunk, is_function, &pre_argument, function_name, arguments, pre_argument_type.as_ref().unwrap())?,
 
         // this should be unreachable unless I seriously mess something up
         expression_pat!(Type { .. }) => unreachable!(),

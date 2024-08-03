@@ -1,38 +1,15 @@
-struct PersonAge {
-    years int,
-    months int,
-    important_field string
+fun (n int):abs() int {
+    if n > 0 {
+		n
+	} else {
+		-n
+	}
 }
 
-struct Person {
-    name string,
-    age PersonAge
+fun (var n int):inc() null {
+    n = n + 1;
 }
 
-fun modifyInt(var n int, newValue int) null {
-    n = newValue;
-}
-
-fun modifyPersonAge(var a PersonAge) null {
-    a.important_field = "abc";
-    modifyInt(a.years, 15);
-}
-
-fun modifyPerson(var p Person) null {
-    p.name = "kuon";
-    modifyPersonAge(p.age);
-    modifyInt(p.age.months, 8);
-}
-
-var p1 = Person {
-    name: "idk",
-    age: mkstruct {
-        years: 2,
-        months: 3,
-        important_field: "idk"
-    }
-};
-
-modifyPerson(p1);
-
-p1
+val n = -3;
+n:inc();
+n:abs()

@@ -55,11 +55,13 @@ pub fn compile_value(
             name,
             params,
             body,
+            pre_parameter,
             ..
         }) => {
             let index = compile_function_definition(
                 chunk,
                 is_function,
+                pre_parameter,
                 params,
                 body,
                 name,

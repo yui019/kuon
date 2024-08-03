@@ -1,5 +1,7 @@
 use std::collections::HashMap;
 
+use crate::parser::r#type::Type;
+
 use super::operation::Operation;
 
 #[derive(Debug, Clone)]
@@ -10,6 +12,7 @@ pub struct ChunkFunctionParam {
 #[derive(Debug, Clone)]
 pub struct ChunkFunction {
     pub chunk: Chunk,
+    pub pre_param: Option<ChunkFunctionParam>,
     pub parameters: Vec<ChunkFunctionParam>,
 }
 
@@ -21,6 +24,10 @@ pub struct Chunk {
     // this is used while compiling as a mapping between global function names
     // and their indices in the functions Vec field
     pub function_index_from_name: HashMap<String, usize>,
+
+    // same thing as function_index_from_name except for value functions, so
+    // it's also indexed by a type for the pre-parameter
+    pub value_function_index_from_name: HashMap<(String, Type), usize>,
 }
 
 impl Chunk {
@@ -29,6 +36,7 @@ impl Chunk {
             code: vec![],
             functions: vec![],
             function_index_from_name: HashMap::new(),
+            value_function_index_from_name: HashMap::new(),
         }
     }
 

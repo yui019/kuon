@@ -1,6 +1,8 @@
-use std::collections::HashMap;
+use std::collections::BTreeMap;
 
 use crate::parser::r#type::Type;
+
+use super::util::types_equal;
 
 #[derive(Debug, Clone)]
 pub struct EnvironmentVariable {
@@ -12,6 +14,7 @@ pub struct EnvironmentVariable {
 #[derive(Debug, Clone)]
 pub struct EnvironmentFunction {
     pub name: String,
+    pub pre_param_type: Option<Type>,
     pub param_types: Vec<Type>,
     pub return_type: Type,
 }
@@ -19,7 +22,7 @@ pub struct EnvironmentFunction {
 #[derive(Debug, Clone)]
 pub struct EnvironmentStruct {
     pub name: String,
-    pub fields: HashMap<String, Type>,
+    pub fields: BTreeMap<String, Type>,
 }
 
 #[derive(Debug, Clone)]
@@ -70,10 +73,34 @@ impl<'a> Environment<'a> {
         }
     }
 
-    pub fn get_function(&self, name: &str) -> Option<EnvironmentFunction> {
-        for function in &self.functions {
-            if function.name == name {
-                return Some(function.clone());
+    pub fn get_function(
+        &self,
+        name: &str,
+        pre_param_type: &Option<Type>,
+    ) -> Option<EnvironmentFunction> {
+        if pre_param_type.is_none() {
+            for function in &self.functions {
+                if function.name == name {
+                    if function.pre_param_type.is_none() {
+                        return Some(function.clone());
+                    }
+                }
+            }
+        } else {
+            for function in &self.functions {
+                if function.name == name {
+                    if let Some(found_function_pre_param_type) =
+                        &function.pre_param_type
+                    {
+                        if types_equal(
+                            self,
+                            pre_param_type.as_ref().unwrap(),
+                            &found_function_pre_param_type,
+                        ) {
+                            return Some(function.clone());
+                        }
+                    }
+                }
             }
         }
 
@@ -101,17 +128,19 @@ impl<'a> Environment<'a> {
     pub fn add_function(
         &mut self,
         name: String,
+        pre_param_type: Option<Type>,
         param_types: Vec<Type>,
         return_type: Type,
     ) {
         self.functions.push(EnvironmentFunction {
             name,
+            pre_param_type,
             param_types,
             return_type,
         })
     }
 
-    pub fn add_struct(&mut self, name: String, fields: HashMap<String, Type>) {
+    pub fn add_struct(&mut self, name: String, fields: BTreeMap<String, Type>) {
         self.structs.push(EnvironmentStruct { name, fields })
     }
 }

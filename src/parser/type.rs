@@ -1,6 +1,6 @@
-use std::collections::HashMap;
+use std::{collections::BTreeMap, hash::Hash};
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum Type {
     Any,
     Null,
@@ -16,7 +16,10 @@ pub enum Type {
     },
 
     Struct {
-        fields: HashMap<String, Type>,
+        // Using a BTreeMap because HashMap doesn't implement Hash (or at least
+        // not yet, there have been a couple of attempts and lots of
+        // discussions about implementing it, it's pretty interesting)
+        fields: BTreeMap<String, Type>,
     },
 
     UserDefined(String),

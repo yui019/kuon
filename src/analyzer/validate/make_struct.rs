@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::collections::{BTreeMap, HashMap};
 
 use crate::{
     analyzer::{
@@ -14,7 +14,7 @@ pub fn validate_make_struct(
     env: &mut Environment,
     line: usize,
     name: &Option<String>,
-    fields: &HashMap<String, Expression>,
+    fields: &mut HashMap<String, Expression>,
 ) -> Result<Type, AnalyzerError> {
     // check if fields match the predefined struct if a name is given
     if name.is_some() {
@@ -41,7 +41,7 @@ pub fn validate_make_struct(
         }
 
         for (defined_field_name, defined_field_type) in defined_fields {
-            match fields.get(&defined_field_name) {
+            match fields.get_mut(&defined_field_name) {
                 Some(field_value) => {
                     let field_type = validate_and_get_type(field_value, env)?;
 
@@ -87,7 +87,20 @@ pub fn validate_make_struct(
         }
 
         return Ok(Type::Struct {
-            fields: field_types,
+            fields: b_tree_map_from_hash_map(field_types),
         });
     }
+}
+
+fn b_tree_map_from_hash_map<K, V>(hash_map: HashMap<K, V>) -> BTreeMap<K, V>
+where
+    K: Ord,
+{
+    let mut b_tree_map: BTreeMap<K, V> = BTreeMap::new();
+
+    for (k, v) in hash_map {
+        b_tree_map.insert(k, v);
+    }
+
+    b_tree_map
 }

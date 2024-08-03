@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::collections::{BTreeMap, HashMap};
 
 use crate::lexer::token::TokenData;
 
@@ -69,6 +69,7 @@ pub enum ExpressionData {
 
     FunctionDefinition {
         name: Option<String>,
+        pre_parameter: Option<FunctionParam>,
         params: Vec<FunctionParam>,
         return_type: Type,
         body: Box<Expression>,
@@ -76,7 +77,7 @@ pub enum ExpressionData {
 
     StructDefinition {
         name: Option<String>,
-        fields: HashMap<String, Type>,
+        fields: BTreeMap<String, Type>,
     },
 
     MakeStruct {
@@ -87,6 +88,16 @@ pub enum ExpressionData {
     FunctionCall {
         function: Box<Expression>,
         arguments: Vec<Expression>,
+    },
+
+    ValueFunctionCall {
+        pre_argument: Box<Expression>,
+        function_name: String,
+        arguments: Vec<Expression>,
+
+        // This field will always be None in the AST produced by the parser.
+        // It's filled by the analyzer instead
+        pre_argument_type: Option<Type>,
     },
 
     FieldAccess {

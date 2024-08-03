@@ -12,8 +12,8 @@ fn eval(code: &str) -> ExecutionResult {
     let code_str = code.to_string();
     let mut lexer = Lexer::from_string(&code_str);
 
-    let ast = parser::parse_source(&mut lexer).unwrap();
-    analyzer::validate(&ast).unwrap();
+    let mut ast = parser::parse_source(&mut lexer).unwrap();
+    analyzer::validate(&mut ast).unwrap();
 
     let chunk = compiler::compile_source(&ast).unwrap();
 
@@ -209,4 +209,27 @@ fn test10() {
             ])
         }
     );
+}
+
+#[test]
+fn test11() {
+    let source = r#"
+    fun (n int):abs() int {
+        if n > 0 {
+            n
+        } else {
+            -n
+        }
+    }
+
+    fun (var n int):inc() null {
+        n = n + 1;
+    }
+
+    val n = -3;
+    n:inc();
+    n:abs()
+    "#;
+
+    assert_eq!(eval(source), ExecutionResult::Int(2));
 }

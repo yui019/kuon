@@ -8,6 +8,7 @@ use infix::validate_infix;
 use make_struct::validate_make_struct;
 use prefix::validate_prefix;
 use struct_definition::validate_struct_definition;
+use value_function_call::validate_value_function_call;
 use variable_assignment::validate_variable_assignment;
 use variable_definition::validate_variable_definition;
 
@@ -31,11 +32,12 @@ mod infix;
 mod make_struct;
 mod prefix;
 mod struct_definition;
+mod value_function_call;
 mod variable_assignment;
 mod variable_definition;
 
 pub fn validate_and_get_type(
-    expression: &Expression,
+    expression: &mut Expression,
     env: &mut Environment,
 ) -> Result<Type, AnalyzerError> {
     match expression {
@@ -110,6 +112,7 @@ pub fn validate_and_get_type(
         expression_pat!(
             ExpressionData::FunctionDefinition {
                 name,
+                pre_parameter,
                 params,
                 return_type,
                 body,
@@ -119,6 +122,7 @@ pub fn validate_and_get_type(
             env,
             *line,
             name,
+            pre_parameter,
             params,
             return_type,
             body,
@@ -137,6 +141,19 @@ pub fn validate_and_get_type(
             function,
             arguments,
         }) => validate_function_call(env, function, arguments),
+
+        expression_pat!(ExpressionData::ValueFunctionCall {
+            pre_argument,
+            function_name,
+            arguments,
+            pre_argument_type
+        }) => validate_value_function_call(
+            env,
+            pre_argument,
+            function_name,
+            arguments,
+            pre_argument_type,
+        ),
 
         expression_pat!(ExpressionData::FieldAccess { expression, field }) => {
             validate_field_access(env, expression, field)

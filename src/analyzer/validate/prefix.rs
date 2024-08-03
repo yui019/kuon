@@ -10,7 +10,7 @@ use super::validate_and_get_type;
 pub fn validate_prefix(
     env: &mut Environment,
     operator: &TokenData,
-    value: &Expression,
+    value: &mut Expression,
 ) -> Result<Type, AnalyzerError> {
     if *operator != TokenData::Minus {
         unreachable!();

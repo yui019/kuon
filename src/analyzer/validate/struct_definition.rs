@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::collections::BTreeMap;
 
 use crate::{
     analyzer::{analyzer_error::AnalyzerError, env::Environment},
@@ -10,7 +10,7 @@ pub fn validate_struct_definition(
     env: &mut Environment,
     line: usize,
     name: &Option<String>,
-    fields: &HashMap<String, Type>,
+    fields: &BTreeMap<String, Type>,
 ) -> Result<Type, AnalyzerError> {
     // add struct to the environment if it has a name (only top level structs
     // can have names, this is ensured by the parser)

@@ -59,6 +59,23 @@ pub fn execute_call(
             default_stack.push(value);
         }
     }
+    // then do the same thing for the pre-parameter
+    if let Some(pre_param) = &function.pre_param {
+        let value = stack.pop().unwrap();
+
+        if !pre_param.constant && !matches!(value.value, Value::ObjectRef(_)) {
+            let index = heap.add_object(Object::Value(value.value));
+
+            let object_ref = Value::ObjectRef(index);
+            default_stack.push(StackValueWrapper::new(object_ref));
+
+            if let Some(came_from) = value.came_from {
+                variables_to_be_updated.push((came_from, index));
+            }
+        } else {
+            default_stack.push(value);
+        }
+    }
 
     let return_value =
         execute_chunk(chunk, heap, Some(function_index), &default_stack);

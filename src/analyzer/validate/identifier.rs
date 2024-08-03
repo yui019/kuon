@@ -9,7 +9,7 @@ pub fn validate_identifier(
     line: usize,
     identifier: &String,
 ) -> Result<Type, AnalyzerError> {
-    if let Some(function) = env.get_function(&identifier) {
+    if let Some(function) = env.get_function(&identifier, &None) {
         return Ok(Type::Function {
             param_types: function.param_types,
             return_type: Box::new(function.return_type),

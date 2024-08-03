@@ -10,10 +10,10 @@ use super::validate_and_get_type;
 
 pub fn validate_function_call(
     env: &mut Environment,
-    function: &Expression,
-    arguments: &Vec<Expression>,
+    function: &mut Expression,
+    arguments: &mut Vec<Expression>,
 ) -> Result<Type, AnalyzerError> {
-    let function_type = validate_and_get_type(&function, env)?;
+    let function_type = validate_and_get_type(function, env)?;
 
     let return_type: Type;
     let param_types: Vec<Type>;
@@ -46,7 +46,7 @@ pub fn validate_function_call(
     }
 
     for i in 0..param_types.len() {
-        let argument_type = validate_and_get_type(&arguments[i], env)?;
+        let argument_type = validate_and_get_type(&mut arguments[i], env)?;
         let param_type = param_types[i].clone();
 
         if !types_equal(env, &argument_type, &param_type) {

@@ -10,7 +10,7 @@ mod env;
 pub mod util;
 mod validate;
 
-pub fn validate(ast: &Expression) -> Result<(), AnalyzerError> {
+pub fn validate(ast: &mut Expression) -> Result<(), AnalyzerError> {
     let mut root_env = Environment::new();
 
     validate_expression(ast, &mut root_env)?;
@@ -19,7 +19,7 @@ pub fn validate(ast: &Expression) -> Result<(), AnalyzerError> {
 }
 
 fn validate_expression(
-    expression: &Expression,
+    expression: &mut Expression,
     parent_env: &mut Environment,
 ) -> Result<(), AnalyzerError> {
     validate_and_get_type(expression, parent_env)?;

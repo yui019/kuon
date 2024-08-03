@@ -12,7 +12,7 @@ pub fn validate_variable_definition(
     env: &mut Environment,
     line: usize,
     type_: &Option<Box<Type>>,
-    value: &Expression,
+    value: &mut Expression,
     name: &String,
     constant: bool,
 ) -> Result<Type, AnalyzerError> {
@@ -24,7 +24,7 @@ pub fn validate_variable_definition(
         );
     }
 
-    if env.get_function(name).is_some() {
+    if env.get_function(name, &None).is_some() {
         return analyzer_error!(
             line,
             "Name {} is taken by an existing function",
@@ -36,7 +36,7 @@ pub fn validate_variable_definition(
         if !types_equal(
             &env.clone(),
             type_,
-            &validate_and_get_type(&value, env)?,
+            &validate_and_get_type(value, env)?,
         ) {
             return analyzer_error!(
                 value.line,
@@ -48,7 +48,7 @@ pub fn validate_variable_definition(
 
         env.add_variable(name.clone(), *type_.clone(), constant);
     } else {
-        let type_ = validate_and_get_type(&value, env)?;
+        let type_ = validate_and_get_type(value, env)?;
         env.add_variable(name.clone(), type_, constant);
     }
 

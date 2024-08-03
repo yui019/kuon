@@ -12,7 +12,7 @@ use util::token_matches;
 use crate::lexer::token::TokenData;
 use crate::lexer::{token::Token, Lexer};
 use crate::parser::parse_functions::block::parse_block;
-use crate::{expression, some_token_pat, token_pat};
+use crate::{expression, expression_pat, some_token_pat, token_pat};
 
 pub mod expression;
 mod parse_functions;
@@ -278,6 +278,50 @@ fn expr_binding_power(
                         )
                     }
 
+                    // Value function call
+                    TokenData::Colon => {
+                        let (function_name, arguments) = match right {
+                            // match all function calls which have an identifier
+                            // as the function expression and extract that
+                            // identifier along with the arguments (rust can't
+                            // match a Box so I had to do something ugly like
+                            // this...)
+                            expression_pat!(ExpressionData::FunctionCall {
+                                function,
+                                arguments,
+                            }) if matches!(
+                                &function.data,
+                                ExpressionData::Identifier(_)
+                            ) =>
+                            {
+                                match function.data {
+                                    ExpressionData::Identifier(
+                                        function_name,
+                                    ) => (function_name, arguments),
+
+                                    _ => unreachable!(),
+                                }
+                            }
+
+                            _ => {
+                                return parser_error!(
+                                    right.line,
+                                    "Expected function call"
+                                );
+                            }
+                        };
+
+                        expression!(
+                            ValueFunctionCall {
+                                pre_argument: Box::new(left.clone()),
+                                function_name,
+                                arguments,
+                                pre_argument_type: None
+                            },
+                            left.line
+                        )
+                    }
+
                     // else
                     _ => expression!(
                         Infix {
@@ -323,6 +367,7 @@ fn infix_binding_power(op: &TokenData) -> Option<(u8, u8)> {
         TokenData::Equals => Some((0, 0)),
 
         TokenData::Dot => Some((50, 51)),
+        TokenData::Colon => Some((60, 61)),
 
         _ => None,
     }
@@ -330,7 +375,7 @@ fn infix_binding_power(op: &TokenData) -> Option<(u8, u8)> {
 
 fn postfix_binding_power(op: &TokenData) -> Option<(u8, ())> {
     match op {
-        TokenData::LeftParenNormal => Some((50, ())),
+        TokenData::LeftParenNormal => Some((70, ())),
         _ => None,
     }
 }

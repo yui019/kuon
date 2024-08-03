@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::collections::BTreeMap;
 
 use crate::{
     expression,
@@ -14,8 +14,8 @@ use super::{super::expression::Expression, r#type::parse_type};
 
 pub fn parse_fields(
     lexer: &mut Lexer,
-) -> Result<HashMap<String, Type>, ParserError> {
-    let mut fields: HashMap<String, Type> = HashMap::new();
+) -> Result<BTreeMap<String, Type>, ParserError> {
+    let mut fields: BTreeMap<String, Type> = BTreeMap::new();
 
     loop {
         let next = lexer.next();

@@ -18,6 +18,7 @@ fn main() {
     let mut parse_result = parser::parse_source(&mut lexer);
     match &mut parse_result {
         Ok(ref mut ast) => {
+            println!("{:#?}", ast);
             if let Err(e) = analyzer::validate(ast) {
                 cprintln!("<red>[Analyzer error]</red> {:?}", e);
                 return;

@@ -89,51 +89,51 @@ fn execute_chunk(
             Operation::Add => {
                 let b = stack.pop().unwrap();
                 let a = stack.pop().unwrap();
-                stack.push(add(&a, &b));
+                stack.push(add(heap, &a, &b));
             }
             Operation::Substract => {
                 let b = stack.pop().unwrap();
                 let a = stack.pop().unwrap();
-                stack.push(substract(&a, &b));
+                stack.push(substract(heap, &a, &b));
             }
             Operation::Multiply => {
                 let b = stack.pop().unwrap();
                 let a = stack.pop().unwrap();
-                stack.push(multiply(&a, &b));
+                stack.push(multiply(heap, &a, &b));
             }
             Operation::Divide => {
                 let b = stack.pop().unwrap();
                 let a = stack.pop().unwrap();
-                stack.push(divide(&a, &b));
+                stack.push(divide(heap, &a, &b));
             }
             Operation::Negate => {
                 let value = stack.pop().unwrap();
-                stack.push(negate(&value));
+                stack.push(negate(heap, &value));
             }
             Operation::Equal => {
                 let b = stack.pop().unwrap();
                 let a = stack.pop().unwrap();
-                stack.push(equal(&a, &b));
+                stack.push(equal(heap, &a, &b));
             }
             Operation::LessThan => {
                 let b = stack.pop().unwrap();
                 let a = stack.pop().unwrap();
-                stack.push(less_than(&a, &b));
+                stack.push(less_than(heap, &a, &b));
             }
             Operation::LessThanOrEqual => {
                 let b = stack.pop().unwrap();
                 let a = stack.pop().unwrap();
-                stack.push(less_than_or_equal(&a, &b));
+                stack.push(less_than_or_equal(heap, &a, &b));
             }
             Operation::GreaterThan => {
                 let b = stack.pop().unwrap();
                 let a = stack.pop().unwrap();
-                stack.push(greater_than(&a, &b));
+                stack.push(greater_than(heap, &a, &b));
             }
             Operation::GreaterThanOrEqual => {
                 let b = stack.pop().unwrap();
                 let a = stack.pop().unwrap();
-                stack.push(greater_than_or_equal(&a, &b));
+                stack.push(greater_than_or_equal(heap, &a, &b));
             }
 
             Operation::Jump(address) => {
@@ -141,7 +141,7 @@ fn execute_chunk(
                 continue;
             }
             Operation::JumpIfFalse(address) => {
-                if !is_true(&stack.pop().unwrap()) {
+                if !is_true(heap, &stack.pop().unwrap()) {
                     i = address;
                     continue;
                 }

@@ -8,7 +8,7 @@ use super::validate_and_get_type;
 
 pub fn validate_field_access(
     env: &mut Environment,
-    expression: &Expression,
+    expression: &mut Expression,
     field: &String,
 ) -> Result<Type, AnalyzerError> {
     let expression_type = validate_and_get_type(expression, env)?;

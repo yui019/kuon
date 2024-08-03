@@ -11,9 +11,9 @@ use super::validate_and_get_type;
 
 pub fn validate_infix(
     env: &mut Environment,
-    left: &Expression,
+    left: &mut Expression,
     operator: &TokenData,
-    right: &Expression,
+    right: &mut Expression,
 ) -> Result<Type, AnalyzerError> {
     if *operator == TokenData::Minus
         || *operator == TokenData::Plus

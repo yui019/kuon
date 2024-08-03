@@ -34,7 +34,7 @@ pub fn parse_type(lexer: &mut Lexer) -> Result<Type, ParserError> {
                 expression_pat!(ExpressionData::StructDefinition {
                     fields,
                     ..
-                }) => Type::Struct { fields },
+                }) => Type::Struct { fields: fields },
 
                 _ => unreachable!(),
             }
