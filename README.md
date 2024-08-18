@@ -113,6 +113,15 @@ val e1 = Element:Empty;
 val e2 = Element:Text { value: "lorem ipsum" };
 ```
 
+One thing which is different from Rust enums is that you can use an enum variant as a type:
+```
+val a: Element:Text = Element:Text { value: "..." };
+// or
+val a = Element:Text { value: "..." } as Element:Text
+```
+This is essentially a cast from type `Element` to type `Element:Type`, and the program crashes if you try it with a value that's not of the `Text` variant.
+I just find myself wishing this was possible in Rust more and more often, so I definitely want to have it in Kuon.
+
 ### Tuples
 
 ```
@@ -374,10 +383,14 @@ Now the type `CustomNumber` implements the `SupportsArithmetic` interface (btw i
 fun [Type] foo(a Type) Type {
 	...
 }
+
+struct [Type] Pair {
+	first Type,
+	second Type,
+}
 ```
 
-This also applies to value and type functions.
-They can be combined with interfaces:
+Generics can be combined with interfaces:
 ```
 fun [Type SupportsArithmetic] sum(a Type, b Type) Type {
 	a + b
