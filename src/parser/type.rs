@@ -1,6 +1,12 @@
 use std::{collections::BTreeMap, hash::Hash};
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub enum GenericTypeWrapper {
+    RegularType(Type),
+    GenericType(String),
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum Type {
     Any,
     Null,
@@ -13,6 +19,8 @@ pub enum Type {
     Function {
         param_types: Vec<Type>,
         return_type: Box<Type>,
+
+        generic_parameters: Vec<String>,
     },
 
     Struct {

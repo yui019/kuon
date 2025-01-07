@@ -116,6 +116,7 @@ pub fn validate_and_get_type(
                 params,
                 return_type,
                 body,
+                generic_parameters
             },
             line
         ) => validate_function_definition(
@@ -126,6 +127,7 @@ pub fn validate_and_get_type(
             params,
             return_type,
             body,
+            generic_parameters,
         ),
 
         expression_pat!(

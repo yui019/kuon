@@ -17,6 +17,7 @@ pub struct EnvironmentFunction {
     pub pre_param_type: Option<Type>,
     pub param_types: Vec<Type>,
     pub return_type: Type,
+    pub generic_parameters: Vec<String>,
 }
 
 #[derive(Debug, Clone)]
@@ -131,12 +132,14 @@ impl<'a> Environment<'a> {
         pre_param_type: Option<Type>,
         param_types: Vec<Type>,
         return_type: Type,
+        generic_parameters: Vec<String>,
     ) {
         self.functions.push(EnvironmentFunction {
             name,
             pre_param_type,
             param_types,
             return_type,
+            generic_parameters,
         })
     }
 

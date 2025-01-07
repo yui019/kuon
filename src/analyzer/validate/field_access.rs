@@ -14,7 +14,7 @@ pub fn validate_field_access(
     let expression_type = validate_and_get_type(expression, env)?;
 
     let fields = match expression_type {
-        Type::Struct { fields } => fields,
+        Type::Struct { fields, .. } => fields,
 
         Type::UserDefined(name) => match env.get_struct(&name) {
             Some(s) => s.fields,

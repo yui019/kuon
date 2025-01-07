@@ -2,6 +2,7 @@ pub mod block;
 pub mod create_variable_assignment;
 pub mod function_arguments;
 pub mod function_definition;
+pub mod generic_parameters;
 pub mod if_condition;
 pub mod make_struct;
 pub mod struct_definition;

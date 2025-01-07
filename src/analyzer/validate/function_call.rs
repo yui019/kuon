@@ -17,14 +17,17 @@ pub fn validate_function_call(
 
     let return_type: Type;
     let param_types: Vec<Type>;
+    let generic_parameters: Vec<String>;
 
     match function_type {
         Type::Function {
             return_type: a,
             param_types: b,
+            generic_parameters: c,
         } => {
             return_type = *a.clone();
             param_types = b;
+            generic_parameters = c;
         }
 
         _ => {
@@ -45,6 +48,7 @@ pub fn validate_function_call(
         );
     }
 
+    // Check if parameter types are equal to argument types, one-by-one
     for i in 0..param_types.len() {
         let argument_type = validate_and_get_type(&mut arguments[i], env)?;
         let param_type = param_types[i].clone();

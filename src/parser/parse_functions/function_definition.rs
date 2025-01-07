@@ -11,7 +11,10 @@ use crate::{
     parser_error, parser_error_eof, some_token_pat,
 };
 
-use super::{super::expression::Expression, r#type::parse_type};
+use super::{
+    super::expression::Expression,
+    generic_parameters::parse_generic_parameters, r#type::parse_type,
+};
 
 pub fn parse_params(
     lexer: &mut Lexer,
@@ -82,6 +85,12 @@ pub fn parse_function_definition(
     top_level: bool,
     line: usize,
 ) -> Result<Expression, ParserError> {
+    let mut generic_parameters: Option<Vec<String>> = None;
+    if token_matches(&lexer.peek(), &TokenData::LeftParenSquare) {
+        lexer.next();
+        generic_parameters = Some(parse_generic_parameters(lexer, line)?);
+    }
+
     let mut name: Option<String> = None;
 
     // get name if it exists
@@ -179,6 +188,7 @@ pub fn parse_function_definition(
                 params,
                 return_type,
                 body: Box::new(body),
+                generic_parameters
             },
             line
         ))
@@ -193,6 +203,7 @@ pub fn parse_function_definition(
                 params,
                 return_type,
                 body: Box::new(body),
+                generic_parameters
             },
             line
         ))

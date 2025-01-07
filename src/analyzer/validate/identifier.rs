@@ -13,6 +13,7 @@ pub fn validate_identifier(
         return Ok(Type::Function {
             param_types: function.param_types,
             return_type: Box::new(function.return_type),
+            generic_parameters: function.generic_parameters,
         });
     } else if let Some(variable) = env.get_variable(&identifier) {
         return Ok(variable.type_);

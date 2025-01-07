@@ -73,6 +73,7 @@ pub enum ExpressionData {
         params: Vec<FunctionParam>,
         return_type: Type,
         body: Box<Expression>,
+        generic_parameters: Option<Vec<String>>,
     },
 
     StructDefinition {

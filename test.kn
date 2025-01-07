@@ -1,15 +1,5 @@
-fun (n int):abs() int {
-    if n > 0 {
-		n
-	} else {
-		-n
-	}
+fun [T] add(a T, b T) T {
+	a + b
 }
 
-fun (var n int):inc() null {
-    n = n + 1;
-}
-
-val n = -3;
-n:inc();
-n:abs()
+add(3, 2)

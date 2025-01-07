@@ -19,7 +19,15 @@ pub fn validate_function_definition(
     params: &Vec<FunctionParam>,
     return_type: &Type,
     body: &mut Box<Expression>,
+    generic_parameters: &Option<Vec<String>>,
 ) -> Result<Type, AnalyzerError> {
+    // just turn generic_parameters into an empty vec if it's None
+    let generic_parameters = if generic_parameters.is_none() {
+        vec![]
+    } else {
+        generic_parameters.clone().unwrap()
+    };
+
     let mut param_types: Vec<Type> = vec![];
     for param in params {
         param_types.push(param.type_.clone());
@@ -53,6 +61,7 @@ pub fn validate_function_definition(
             pre_param_type,
             param_types.clone(),
             return_type.clone(),
+            generic_parameters.clone(),
         );
     }
 
@@ -88,5 +97,6 @@ pub fn validate_function_definition(
     return Ok(Type::Function {
         param_types,
         return_type: Box::new(return_type.clone()),
+        generic_parameters,
     });
 }

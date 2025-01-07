@@ -44,13 +44,28 @@ pub fn validate_infix(
                 return Ok(Type::Float);
             }
 
+            // This is here temporarily to let me test out generics with a
+            // simple add function. Instead, this is supposed to check if the
+            // type implements some arithmetics interface or something (but
+            // interfaces don't exist yet!!)
+            (left_type, right_type)
+                if types_equal(env, &left_type, &right_type) =>
+            {
+                return Ok(left_type)
+            }
             _ => {
                 return analyzer_error!(
                     left.line,
-                    "Operator {:?} only works on numbers",
+                    "Operator {:?} cannot work on operators of different types",
                     operator
                 )
-            }
+            } /* _ => {
+               *     return analyzer_error!(
+               *         left.line,
+               *         "Operator {:?} only works on numbers",
+               *         operator
+               *     )
+               * } */
         }
     } else if *operator == TokenData::LessThan
         || *operator == TokenData::LessThanOrEqual
